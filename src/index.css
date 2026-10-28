@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-leaf: var(--leaf);
+  --font-sans: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --radius-card: 1.5rem;
+  --shadow-soft: var(--shadow);
+}
+
+/* ---------- base tokens (light, calm and warm) ---------- */
+:root {
+  --bg: #fff9f4;
+  --surface: #ffffff;
+  --surface-2: #fff1e8;
+  --ink: #2d2a3e;
+  --ink-soft: #5f5a73;
+  --line: #eee1d8;
+  --on-accent: #2d2a3e;
+  --leaf: #7fd1a8;
+  --leaf-deep: #4fae82;
+  --shadow: 0 10px 28px -14px rgba(120, 80, 60, 0.3);
+  --mood-1: #ffc9c9;
+  --mood-2: #ffddb8;
+  --mood-3: #fff0b3;
+  --mood-4: #cdf0c4;
+  --mood-5: #b9e6ff;
+  color-scheme: light;
+}
+
+/* cozy, muted dark mode */
+:root.dark {
+  --bg: #1c1827;
+  --surface: #272236;
+  --surface-2: #312b43;
+  --ink: #f3eef9;
+  --ink-soft: #bdb5d0;
+  --line: #40395a;
+  --on-accent: #231f30;
+  --leaf: #6bbf96;
+  --leaf-deep: #4a9d77;
+  --shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+  --mood-1: #8a5a66;
+  --mood-2: #8a6e52;
+  --mood-3: #8a8452;
+  --mood-4: #5a8a62;
+  --mood-5: #52788a;
+  color-scheme: dark;
+}
+
+/* ---------- palettes: accent / accent-2 (gradient end) / soft tint / strong text ---------- */
+:root[data-palette="peach"] { --accent: #ffb89c; --accent-2: #ffd3a8; --accent-soft: #ffe6da; --accent-strong: #a8421d; }
+:root[data-palette="lavender"] { --accent: #cdbcff; --accent-2: #e5b8ff; --accent-soft: #ede6ff; --accent-strong: #5b3bb0; }
+:root[data-palette="mint"] { --accent: #a9e8d0; --accent-2: #b8f0ff; --accent-soft: #dff7ee; --accent-strong: #1b765a; }
+:root[data-palette="sky"] { --accent: #a8d9ff; --accent-2: #c9c6ff; --accent-soft: #e0f1ff; --accent-strong: #1d65a1; }
+:root[data-palette="rose"] { --accent: #ffb5d0; --accent-2: #ffd3b0; --accent-soft: #ffe4ee; --accent-strong: #a92a5e; }
+:root[data-palette="aurora"] { --accent: #ffc8dd; --accent-2: #a8d9ff; --accent-soft: #ece8ff; --accent-strong: #5b3bb0; }
+
+:root.dark[data-palette="peach"] { --accent: #f2a88c; --accent-2: #e8b894; --accent-soft: #4a3340; --accent-strong: #ffc4ae; }
+:root.dark[data-palette="lavender"] { --accent: #b9a6f0; --accent-2: #d2a6e8; --accent-soft: #3b3358; --accent-strong: #d7caff; }
+:root.dark[data-palette="mint"] { --accent: #8ed4b8; --accent-2: #94dbe8; --accent-soft: #2c4443; --accent-strong: #b5ecd6; }
+:root.dark[data-palette="sky"] { --accent: #8cc4ee; --accent-2: #aaa8e8; --accent-soft: #2b3d57; --accent-strong: #b6dcfa; }
+:root.dark[data-palette="rose"] { --accent: #eda0bd; --accent-2: #eebb9c; --accent-soft: #4a2f44; --accent-strong: #ffc4da; }
+:root.dark[data-palette="aurora"] { --accent: #e6a9c4; --accent-2: #8cc4ee; --accent-soft: #342f55; --accent-strong: #d7caff; }
+
+:root { --accent-grad: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+
+html, body, #root { min-height: 100%; }
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(60rem 30rem at 10% -10%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%),
+    radial-gradient(50rem 28rem at 100% 0%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 70%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
+.bg-accent-grad { background-image: var(--accent-grad); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+.safe-top { padding-top: env(safe-area-inset-top); }
