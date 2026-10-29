@@ -52,8 +52,20 @@ export const accessoriesForLevel = (level: number): AccessoryId[] =>
 export const isPaletteUnlocked = (id: PaletteId, level: number): boolean =>
   level >= (PALETTES.find((p) => p.id === id)?.unlockLevel ?? 1)
 
+/** After the last unlock, a garden grows beside the companion: a new plant every two levels, from level 16. */
+export const GARDEN_FROM_LEVEL = 16
+export const GARDEN_EVERY = 2
+export const GARDEN_PLANTS = ['🌷', '🌻', '🌿', '🌸', '🍀', '🌼', '🌵', '🍄'] as const
+
+/** How many plants the garden has at a level (none before level 16, at most all of them). */
+export const gardenSize = (level: number): number =>
+  level < GARDEN_FROM_LEVEL ? 0 : Math.min(GARDEN_PLANTS.length, Math.floor((level - GARDEN_FROM_LEVEL) / GARDEN_EVERY) + 1)
+
+/** The level at which the garden gets its n-th plant. */
+export const levelForPlant = (n: number): number => GARDEN_FROM_LEVEL + (n - 1) * GARDEN_EVERY
+
 export interface Unlock {
-  kind: 'theme' | 'growth' | 'accessory'
+  kind: 'theme' | 'growth' | 'accessory' | 'garden'
   /** the palette id, the accessory id, or the growth stage number: the screen turns it into words */
   id: string | number
 }
@@ -64,5 +76,6 @@ export function unlocksAtLevel(level: number): Unlock[] {
   for (const p of PALETTES) if (p.unlockLevel === level && level > 1) out.push({ kind: 'theme', id: p.id })
   for (const s of STAGES) if (s.unlockLevel === level && level > 1) out.push({ kind: 'growth', id: s.stage })
   for (const a of ACCESSORIES) if (a.unlockLevel === level) out.push({ kind: 'accessory', id: a.id })
+  if (gardenSize(level) > gardenSize(level - 1)) out.push({ kind: 'garden', id: gardenSize(level) })
   return out
 }

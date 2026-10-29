@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Companion } from '../components/Companion'
 import { XpBar } from '../components/XpBar'
 import { Card, SectionTitle } from '../components/ui/Card'
-import { ACCESSORIES, PALETTES, STAGES, stageForLevel } from '../data/unlocks'
+import { ACCESSORIES, GARDEN_FROM_LEVEL, GARDEN_PLANTS, PALETTES, STAGES, gardenSize, levelForPlant, stageForLevel } from '../data/unlocks'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n/en'
 import { formatMonthName, monthDays } from '../lib/dates'
@@ -37,6 +37,7 @@ export function Progress() {
   const showedUp = showedUpDays(data, today)
   const month = formatMonthName(today, locale)
   const [previewLevel, setPreviewLevel] = useState(Math.min(level.level, MAX_PREVIEW_LEVEL))
+  const garden = gardenSize(level.level)
   const wearing = ACCESSORIES.filter((a) => previewLevel >= a.unlockLevel).map((a) => t(`accessory.${a.id}` as MessageKey).toLowerCase())
   const stageName = (lvl: number) => t(`stage.${stageForLevel(lvl).stage}` as MessageKey)
 
@@ -85,6 +86,27 @@ export function Progress() {
             </p>
           </div>
         </div>
+      </Card>
+
+      <Card>
+        <SectionTitle hint={garden > 0 ? tn('garden.count', garden) : undefined}>{t('garden.title')}</SectionTitle>
+        {garden > 0 ? (
+          <>
+            <ul className="flex flex-wrap gap-3">
+              {GARDEN_PLANTS.slice(0, garden).map((plant, i) => (
+                <li key={plant} className="flex h-16 w-16 items-center justify-center rounded-3xl bg-accent-soft text-4xl">
+                  <span aria-hidden="true">{plant}</span>
+                  <span className="sr-only">{t('garden.plant', { n: i + 1 })}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-sm text-ink-soft">
+              {garden < GARDEN_PLANTS.length ? t('garden.next', { n: levelForPlant(garden + 1) }) : t('garden.full')}
+            </p>
+          </>
+        ) : (
+          <p className="text-ink-soft">{t('garden.locked', { n: GARDEN_FROM_LEVEL, name: data.companion.name })}</p>
+        )}
       </Card>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -144,6 +166,7 @@ export function Progress() {
               lvl: s.unlockLevel,
             })),
             ...ACCESSORIES.map((a) => ({ key: a.id, icon: '🎀', label: t(`accessory.${a.id}` as MessageKey), lvl: a.unlockLevel })),
+            { key: 'garden', icon: '🪴', label: t('garden.opens'), lvl: GARDEN_FROM_LEVEL },
             ...PALETTES.filter((p) => p.unlockLevel > 1).map((p) => ({
               key: p.id,
               icon: '🎨',

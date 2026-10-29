@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addHabit, completeBreathing, deleteHabit, saveCheckIn, toggleHabit } from './actions'
+import { addHabit, completeBreathing, deleteHabit, saveCheckIn, toggleHabit, updateHabit } from './actions'
 import { createInitialData } from './types'
 import { normalize } from './persistence'
 import { activeDaysThisMonth } from '../lib/stats'
@@ -85,5 +85,30 @@ describe('reminders', () => {
   })
   it('never repeats the previous message', () => {
     for (let i = 0; i < 12; i++) expect(pickMessageIndex(i, () => i / 12, 12)).not.toBe(i)
+  })
+})
+
+describe('habits with their own weekdays', () => {
+  it('stores a schedule, cleaned up, and nothing for "every day"', () => {
+    const base = createInitialData()
+    expect(addHabit(base, '🧘', 'Stretch', new Date(), [5, 1, 1, 9]).habits[0].days).toEqual([1, 5])
+    expect('days' in addHabit(base, '🧘', 'Stretch', new Date(), [0, 1, 2, 3, 4, 5, 6]).habits[0]).toBe(false)
+    expect('days' in addHabit(base, '🧘', 'Stretch').habits[0]).toBe(false)
+  })
+
+  it('changes and removes a schedule when a habit is edited, keeping everything else', () => {
+    const one = addHabit(createInitialData(), '🧘', 'Stretch', new Date(), [1, 3])
+    const id = one.habits[0].id
+    const changed = updateHabit(one, id, '🧘', 'Stretch more', [6, 0])
+    expect(changed.habits[0]).toMatchObject({ id, name: 'Stretch more', days: [6, 0] })
+    const everyDay = updateHabit(changed, id, '🧘', 'Stretch more')
+    expect('days' in everyDay.habits[0]).toBe(false)
+    expect(everyDay.habits[0].createdAt).toBe(one.habits[0].createdAt)
+  })
+
+  it('still gives XP for a habit ticked on a day it is not meant for (no scolding, no locks)', () => {
+    const one = addHabit(createInitialData(), '🧘', 'Stretch', new Date(), [1]) // Mondays
+    const r = toggleHabit(one, one.habits[0].id, '2026-10-31') // a Saturday
+    expect(r.xp).toBe(10)
   })
 })

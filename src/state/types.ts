@@ -11,6 +11,8 @@ export interface Habit {
   emoji: string
   name: string
   createdAt: string
+  /** the weekdays it is meant for (0 = Sunday ... 6 = Saturday); nothing means every day */
+  days?: number[]
 }
 
 export interface CheckIn {

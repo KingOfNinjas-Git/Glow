@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HABIT_EMOJIS } from '../data/content'
 import { useI18n } from '../i18n'
+import { normalizeDays, WEEK_ORDER } from '../lib/habits'
 import type { Habit } from '../state/types'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
@@ -10,20 +11,26 @@ interface Props {
   /** null = adding a new habit */
   habit: Habit | null
   onClose: () => void
-  onSave: (emoji: string, name: string) => void
+  onSave: (emoji: string, name: string, days?: number[]) => void
   onDelete?: (id: string) => void
 }
 
+/** "Mon", "Tue" ... in the language of the app (2026-01-05 is a Monday). */
+export const weekdayName = (day: number, locale: string, style: 'short' | 'long' = 'short'): string =>
+  new Date(2026, 0, 4 + day).toLocaleDateString(locale, { weekday: style })
+
 export function HabitForm({ open, habit, onClose, onSave, onDelete }: Props) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const [emoji, setEmoji] = useState('✨')
   const [name, setName] = useState('')
+  const [days, setDays] = useState<number[]>([])
   const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
     if (open) {
       setEmoji(habit?.emoji ?? '✨')
       setName(habit?.name ?? '')
+      setDays(normalizeDays(habit?.days) ?? [])
       setConfirming(false)
     }
   }, [open, habit])
@@ -31,7 +38,7 @@ export function HabitForm({ open, habit, onClose, onSave, onDelete }: Props) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    onSave(emoji, name)
+    onSave(emoji, name, normalizeDays(days))
     onClose()
   }
 
@@ -73,6 +80,34 @@ export function HabitForm({ open, habit, onClose, onSave, onDelete }: Props) {
             </button>
           ))}
         </div>
+        <fieldset className="border-0 p-0">
+          <legend className="mb-1 block text-sm font-bold text-ink-soft">{t('form.days')}</legend>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setDays([])}
+              aria-pressed={!normalizeDays(days)}
+              className={`rounded-full px-3.5 py-2 text-sm font-bold ${!normalizeDays(days) ? 'bg-accent-soft text-accent-strong ring-2 ring-accent-strong' : 'bg-surface2 text-ink-soft hover:bg-accent-soft'}`}
+            >
+              {t('form.daysAll')}
+            </button>
+            {WEEK_ORDER.map((d) => {
+              const on = days.includes(d)
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDays(on ? days.filter((x) => x !== d) : [...days, d])}
+                  aria-pressed={on}
+                  className={`rounded-full px-3.5 py-2 text-sm font-bold ${on ? 'bg-accent-soft text-accent-strong ring-2 ring-accent-strong' : 'bg-surface2 text-ink-soft hover:bg-accent-soft'}`}
+                >
+                  {weekdayName(d, locale)}
+                </button>
+              )
+            })}
+          </div>
+          <p className="mt-1.5 text-xs text-ink-soft">{t('form.daysHint')}</p>
+        </fieldset>
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
           {habit && onDelete ? (
             confirming ? (

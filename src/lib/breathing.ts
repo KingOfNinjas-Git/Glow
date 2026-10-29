@@ -2,8 +2,11 @@ export type PhaseKind = 'inhale' | 'hold' | 'exhale'
 export interface Phase {
   kind: PhaseKind
   seconds: number
+  /** circle size (0 small .. 1 full) at the start / end of this phase; the defaults are 0 -> 1 for an inhale and 1 -> 0 for an exhale */
+  from?: number
+  to?: number
 }
-export type PresetId = 'box' | '478' | 'calm'
+export type PresetId = 'box' | '478' | 'calm' | 'coherent' | 'sigh'
 export interface BreathPreset {
   id: PresetId
   name: string
@@ -46,6 +49,27 @@ export const PRESETS: BreathPreset[] = [
       { kind: 'exhale', seconds: 6 },
     ],
   },
+  {
+    id: 'coherent',
+    name: 'Coherent',
+    pattern: '5 · 5',
+    blurb: 'Smooth and even, about six breaths a minute.',
+    phases: [
+      { kind: 'inhale', seconds: 5 },
+      { kind: 'exhale', seconds: 5 },
+    ],
+  },
+  {
+    id: 'sigh',
+    name: 'Sigh',
+    pattern: '2 · 1 · 6',
+    blurb: 'Two quick sips of air, then one long sigh out. Quick relief.',
+    phases: [
+      { kind: 'inhale', seconds: 2, to: 0.7 },
+      { kind: 'inhale', seconds: 1, from: 0.7 },
+      { kind: 'exhale', seconds: 6 },
+    ],
+  },
 ]
 
 export const DURATIONS_MIN = [1, 2, 3] as const
@@ -55,6 +79,9 @@ export const PHASE_LABEL: Record<PhaseKind, string> = {
   hold: 'Hold',
   exhale: 'Exhale',
 }
+
+const startScale = (p: Phase): number => p.from ?? (p.kind === 'exhale' ? 1 : 0)
+const endScale = (p: Phase): number => p.to ?? (p.kind === 'inhale' ? 1 : 0)
 
 export const getPreset = (id: PresetId): BreathPreset => PRESETS.find((p) => p.id === id) ?? PRESETS[0]
 
@@ -92,12 +119,12 @@ export function phaseAt(preset: BreathPreset, elapsedMs: number): PhaseState {
     if (t < start + len) {
       const progress = (t - start) / len
       let scale: number
-      if (phase.kind === 'inhale') scale = progress
-      else if (phase.kind === 'exhale') scale = 1 - progress
-      else {
+      if (phase.kind === 'hold') {
         // a hold keeps whatever size the previous phase ended at
         const prev = preset.phases[(i - 1 + preset.phases.length) % preset.phases.length]
-        scale = prev.kind === 'inhale' ? 1 : 0
+        scale = endScale(prev)
+      } else {
+        scale = startScale(phase) + (endScale(phase) - startScale(phase)) * progress
       }
       return {
         index: i,

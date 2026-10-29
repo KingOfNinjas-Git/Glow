@@ -1,5 +1,6 @@
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useEffect, useMemo } from 'react'
+import type { Unlock } from '../data/unlocks'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n/en'
 import { useFx } from '../state/FxContext'
@@ -31,9 +32,10 @@ function FloatingXp() {
 }
 
 /** What a level-up unlocked, in words, in the chosen language. */
-function unlockLabel(u: { kind: 'theme' | 'growth' | 'accessory'; id: string | number }, t: (key: MessageKey, vars?: Record<string, string | number>) => string): string {
+function unlockLabel(u: Unlock, t: (key: MessageKey, vars?: Record<string, string | number>) => string): string {
   if (u.kind === 'theme') return t('unlock.theme', { name: t(`palette.${u.id}` as MessageKey) })
   if (u.kind === 'growth') return t('unlock.growth', { name: t(`stage.${u.id}` as MessageKey) })
+  if (u.kind === 'garden') return t('unlock.garden')
   return t(`accessory.${u.id}` as MessageKey)
 }
 
@@ -92,7 +94,7 @@ function LevelUp() {
             <ul className="mt-4 space-y-2 text-left">
               {levelUp.unlocks.map((u) => (
                 <li key={`${u.kind}-${u.id}`} className="flex items-center gap-3 rounded-2xl bg-accent-soft px-4 py-2.5 font-semibold text-accent-strong">
-                  <span aria-hidden="true">{u.kind === 'theme' ? '🎨' : u.kind === 'growth' ? '🌱' : '🎀'}</span>
+                  <span aria-hidden="true">{u.kind === 'theme' ? '🎨' : u.kind === 'growth' ? '🌱' : u.kind === 'garden' ? '🪴' : '🎀'}</span>
                   {t('fx.new', { label: unlockLabel(u, t) })}
                 </li>
               ))}

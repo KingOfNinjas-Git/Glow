@@ -12,7 +12,7 @@ A gentle self-care web app. Tiny habits, breathing exercises and mood check-ins 
 | --- | --- | --- |
 | ![Home on a computer](docs/screenshots/desktop-home.png) | ![Breathing on a phone](docs/screenshots/phone-breathe-dark.png) | ![Home in Portuguese](docs/screenshots/phone-home-portugues.png) |
 
-More in `docs/screenshots/`; a draft write-up for a project page is in `docs/CASE_STUDY.md`.
+A longer narrated-by-captions tour (about 90 seconds, with title cards and camera moves) is in [`docs/media/glow-demo-full.mp4`](docs/media/glow-demo-full.mp4) (plays everywhere; a WebM copy is next to it). More in `docs/screenshots/`; a draft write-up for a project page is in `docs/CASE_STUDY.md`.
 
 ## For someone trying it
 
@@ -68,7 +68,12 @@ All text lives in `src/i18n/` (`en.ts` is the source; `pt.ts` and `es.ts` must h
 - Level is always derived from total XP, never stored.
 - Anti-farming without punishment: a habit gives XP once per day, and the check-in once per day. Unticking never removes XP. Skipped days cost nothing.
 
+### Habits on their own days
+A habit can be meant for some weekdays only (`days` on the habit, 0 = Sunday ... 6 = Saturday; nothing means every day). The Home screen lists the habits meant for today and tucks the others under "for another day"; they can still be ticked and still earn XP, so nothing is ever locked or scolded. Schedules are cleaned when loaded and when a backup is restored (`normalizeDays` in `src/lib/habits.ts`).
+
 ### Unlocks (`src/data/unlocks.ts`)
+**After level 15 a garden grows** beside the companion: the first plant at level 16 and a new one every two levels, up to eight (level 30). The sample bar can jump that high to show it.
+
 Six themes (Peach L1, Lavender L2, Mint L4, Sky L6, Rosé L9, Aurora L13), six companion growth stages (seed → in bloom) and five accessories (rosy cheeks, sparkles, bow, shades, crown) tied to levels.
 
 ### Data and storage
@@ -79,6 +84,8 @@ All data is one versioned JSON object under `STORAGE_KEY`, accessed through `src
 **Sample data** (`src/lib/sample.ts`) is generated from a fixed seed, so it is the same every time, and its XP is exactly what the real rules would have granted. It is marked `sample: true`; "Start fresh" removes it. The language choice survives loading it, starting fresh, and a reset.
 
 ### Breathing
+Five exercises: Box (4·4·4·4), 4-7-8, Calm (4·6), Coherent (5·5, about six breaths a minute) and Sigh (two quick sips of air, then one long breath out). A phase can say how big the circle is when it starts and ends (`from` / `to` in `src/lib/breathing.ts`), which is how the sigh's two in-breaths work.
+
 The session clock only advances while the app is showing (`advanceElapsed` in `src/lib/breathing.ts`), so locking the phone pauses it instead of finishing it and awarding XP. The screen is kept awake during a session (Screen Wake Lock, `src/hooks/useWakeLock.ts`), and a soft vibration marks each phase on phones that support it (a setting).
 
 ### Reminders

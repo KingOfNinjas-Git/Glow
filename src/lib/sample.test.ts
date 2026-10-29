@@ -69,3 +69,19 @@ describe('sample data', () => {
     expect(checkInClaimKey(today) in sample.xpClaims).toBe(false)
   })
 })
+
+describe('sample data: a habit with its own days', () => {
+  const sample = createSampleData(now)
+
+  it('gives one habit weekdays, and only ever ticks it on those days', () => {
+    const friend = sample.habits.find((h) => h.id === 'sample-friend')
+    expect(friend?.days).toEqual([1, 3, 5])
+    const ticked = Object.entries(sample.completions).filter(([date, ids]) => date !== today && ids.includes('sample-friend'))
+    expect(ticked.length).toBeGreaterThan(0)
+    for (const [date] of ticked) expect([1, 3, 5]).toContain(new Date(`${date}T12:00:00`).getDay())
+  })
+
+  it('keeps the other habits for every day', () => {
+    expect(sample.habits.filter((h) => h.id !== 'sample-friend').every((h) => !('days' in h))).toBe(true)
+  })
+})

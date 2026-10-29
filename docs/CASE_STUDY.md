@@ -31,7 +31,7 @@ So the first screen now offers **Explore with sample data**: thirty days of beli
 
 ## How I checked it
 
-- 63 unit tests and 42 browser tests that run in real **Firefox and WebKit** (the engine behind Safari), on a computer-sized and a phone-sized window: sample data, XP, check-in, theme preview, backup download, start over, restore, a wrong file, breathing, offline use, keyboard shortcuts, and all three languages. They also run against the live site.
+- 82 unit tests and 54 browser tests that run in real **Firefox and WebKit** (the engine behind Safari), on a computer-sized and a phone-sized window: sample data, XP, check-in, theme preview, backup download, start over, restore, a wrong file, breathing, offline use, keyboard shortcuts, and all three languages. They also run against the live site.
 - Automated accessibility checks (axe) report no violations on any screen, in light and dark, on phone and computer, in all three languages.
 - A strict Content-Security-Policy and security headers on the server.
 - Lighthouse on the live site, simulated slow phone: performance 94, accessibility 100, best practices 100, SEO 100 (first paint 1.5 s, no layout shift). The first download is about 80 KB compressed (it was 133 KB before the other screens and the animation code were loaded on demand).
@@ -44,8 +44,13 @@ So the first screen now offers **Explore with sample data**: thirty days of beli
 - Sample habits were stored in English, so Portuguese visitors saw English names.
 - A security header I had added (Cross-Origin-Opener-Policy) made Lighthouse and PageSpeed fail to record the page load, which would have shown reviewers a failed run on the live site. Running the audit on the real address, not only locally, caught it; the header is gone and the reason is written next to the others.
 
+## Added since the first version
+
+- **Habits on their own days.** A habit can be meant for some weekdays only. The others wait in a quiet list and can still be ticked for XP, so a schedule is a help, never a lock.
+- **Two more breathing exercises**, Coherent (5 in, 5 out) and Sigh (two quick sips of air, one long breath out), which needed the breathing circle to learn that a phase can start and end at any size.
+- **A garden after the last unlock.** From level 16 a new plant grows beside the companion every two levels, so there is still something to look forward to after the crown.
+
 ## What I would do next
 
 - Real reminders need a small server (web push); today they are best-effort.
-- Habit schedules (weekdays) and a few more calm exercises.
-- An "endgame" after the last unlock (about six months at a normal pace), such as a second plant.
+- More gentle exercises beyond breathing (a short grounding exercise, a body check-in).

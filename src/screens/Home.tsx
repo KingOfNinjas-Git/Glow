@@ -2,7 +2,7 @@ import { AnimatePresence } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { BackupNudge } from '../components/BackupNudge'
 import { Companion } from '../components/Companion'
-import { HabitForm } from '../components/HabitForm'
+import { HabitForm, weekdayName } from '../components/HabitForm'
 import { HabitRow } from '../components/HabitRow'
 import { TryList } from '../components/TryList'
 import { XpBar } from '../components/XpBar'
@@ -12,6 +12,7 @@ import { GREETING_COUNT, HABIT_SUGGESTIONS } from '../data/content'
 import { stageForLevel } from '../data/unlocks'
 import { allTranslations, useI18n } from '../i18n'
 import type { MessageKey } from '../i18n/en'
+import { isDueOn, normalizeDays } from '../lib/habits'
 import { activeDaysThisMonth, habitDaysThisMonth } from '../lib/stats'
 import { useApp } from '../state/AppContext'
 import type { Habit } from '../state/types'
@@ -25,13 +26,20 @@ function greetingKey(): MessageKey {
 
 export function Home() {
   const app = useApp()
-  const { t, tn } = useI18n()
+  const { t, tn, locale } = useI18n()
   const { data, today, level } = app
   const [editing, setEditing] = useState<Habit | null>(null)
   const [formOpen, setFormOpen] = useState(false)
 
   const doneToday = data.completions[today] ?? []
-  const doneCount = data.habits.filter((h) => doneToday.includes(h.id)).length
+  // Habits meant for today (plus any ticked anyway); the rest wait in a quiet list below
+  const dueToday = data.habits.filter((h) => isDueOn(h, today) || doneToday.includes(h.id))
+  const notToday = data.habits.filter((h) => !dueToday.includes(h))
+  const doneCount = dueToday.filter((h) => doneToday.includes(h.id)).length
+  const scheduleOf = (h: Habit): string | undefined => {
+    const days = normalizeDays(h.days)
+    return days ? t('habit.row.schedule', { days: days.map((d) => weekdayName(d, locale)).join(' · ') }) : undefined
+  }
   const monthDays = activeDaysThisMonth(data, today)
   const ideas = useMemo(
     () => HABIT_SUGGESTIONS.filter((s) => !data.habits.some((h) => allTranslations(s.key).includes(h.name.toLowerCase()))),
@@ -50,11 +58,13 @@ export function Home() {
   const summary =
     data.habits.length === 0
       ? t('home.summary.empty')
-      : doneCount === 0
-        ? t('home.summary.none')
-        : doneCount === data.habits.length
-          ? t('home.summary.all')
-          : t('home.summary.some', { done: doneCount, total: data.habits.length })
+      : dueToday.length === 0
+        ? t('home.summary.rest')
+        : doneCount === 0
+          ? t('home.summary.none')
+          : doneCount === dueToday.length
+            ? t('home.summary.all')
+            : t('home.summary.some', { done: doneCount, total: dueToday.length })
 
   return (
     <div className="space-y-6">
@@ -95,18 +105,39 @@ export function Home() {
 
           <ul className="space-y-2.5">
             <AnimatePresence initial={false}>
-              {data.habits.map((h) => (
+              {dueToday.map((h) => (
                 <HabitRow
                   key={h.id}
                   habit={h}
                   done={doneToday.includes(h.id)}
                   daysThisMonth={habitDaysThisMonth(data, h.id, today)}
+                  schedule={scheduleOf(h)}
                   onToggle={(el) => app.toggleHabit(h.id, el)}
                   onEdit={() => openEdit(h)}
                 />
               ))}
             </AnimatePresence>
           </ul>
+
+          {notToday.length > 0 && (
+            <details className="mt-4 rounded-3xl border border-line bg-surface px-4 py-3">
+              <summary className="cursor-pointer text-sm font-bold text-ink-soft">{tn('home.notToday', notToday.length)}</summary>
+              <p className="mt-2 text-xs text-ink-soft">{t('home.notToday.hint')}</p>
+              <ul className="mt-3 space-y-2.5">
+                {notToday.map((h) => (
+                  <HabitRow
+                    key={h.id}
+                    habit={h}
+                    done={false}
+                    daysThisMonth={habitDaysThisMonth(data, h.id, today)}
+                    schedule={scheduleOf(h)}
+                    onToggle={(el) => app.toggleHabit(h.id, el)}
+                    onEdit={() => openEdit(h)}
+                  />
+                ))}
+              </ul>
+            </details>
+          )}
 
           {ideas.length > 0 && (
             <Card className="mt-5 !p-4">
@@ -132,7 +163,7 @@ export function Home() {
         open={formOpen}
         habit={editing}
         onClose={() => setFormOpen(false)}
-        onSave={(emoji, name) => (editing ? app.updateHabit(editing.id, emoji, name) : app.addHabit(emoji, name))}
+        onSave={(emoji, name, days) => (editing ? app.updateHabit(editing.id, emoji, name, days) : app.addHabit(emoji, name, days))}
         onDelete={app.deleteHabit}
       />
     </div>

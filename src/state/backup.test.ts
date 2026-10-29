@@ -69,3 +69,31 @@ describe('a breathing session while the screen is locked', () => {
     expect(afterLock.index).toBe(before.index)
   })
 })
+
+describe('restoring habit weekdays', () => {
+  const base = { ...createInitialData(), profile: { ...createInitialData().profile, onboarded: true } }
+  const withDays = addHabit(base, '🧘', 'Stretch', new Date(), [1, 3, 5])
+
+  it('keeps a habit schedule through a backup and restore', () => {
+    const result = parseBackup(JSON.stringify(withDays))
+    expect(result.ok && result.data.habits[0].days).toEqual([1, 3, 5])
+  })
+
+  it('cleans a damaged schedule instead of leaving a habit that is never due', () => {
+    const broken = JSON.parse(JSON.stringify(withDays))
+    broken.habits[0].days = ['mon', 99, null]
+    const none = parseBackup(JSON.stringify(broken))
+    expect(none.ok && 'days' in none.data.habits[0]).toBe(false)
+    broken.habits[0].days = [3, 3, 1, 42]
+    const some = parseBackup(JSON.stringify(broken))
+    expect(some.ok && some.data.habits[0].days).toEqual([1, 3])
+  })
+
+  it('loads older saves that have no schedules at all', () => {
+    const old = JSON.parse(JSON.stringify(withDays))
+    delete old.habits[0].days
+    const result = parseBackup(JSON.stringify(old))
+    expect(result.ok && result.data.habits[0].name).toBe('Stretch')
+    expect(result.ok && 'days' in result.data.habits[0]).toBe(false)
+  })
+})

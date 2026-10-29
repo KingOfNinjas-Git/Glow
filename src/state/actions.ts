@@ -2,6 +2,7 @@ import { XP_REWARDS } from '../lib/xp'
 import type { Mood } from '../data/content'
 import type { DateKey } from '../lib/dates'
 import type { PresetId } from '../lib/breathing'
+import { normalizeDays } from '../lib/habits'
 import type { AppData, Habit, Reminder, Settings } from './types'
 
 /** Every action is pure: (state, input) -> new state plus the XP it granted (0 if none). */
@@ -22,19 +23,27 @@ const withXp = (state: AppData, amount: number): AppData => ({ ...state, xp: sta
 export const habitClaimKey = (date: DateKey, id: string) => `${date}:habit:${id}`
 export const checkInClaimKey = (date: DateKey) => `${date}:checkin`
 
-export function addHabit(state: AppData, emoji: string, name: string, now = new Date()): AppData {
+export function addHabit(state: AppData, emoji: string, name: string, now = new Date(), days?: number[]): AppData {
   const trimmed = name.trim()
   if (!trimmed) return state
   const habit: Habit = { id: newId(), emoji: emoji || '✨', name: trimmed.slice(0, 40), createdAt: now.toISOString() }
+  const schedule = normalizeDays(days)
+  if (schedule) habit.days = schedule
   return { ...state, habits: [...state.habits, habit] }
 }
 
-export function updateHabit(state: AppData, id: string, emoji: string, name: string): AppData {
+/** Changes a habit. `days` replaces its schedule (leave it out, or send every day, for a habit that is meant for every day). */
+export function updateHabit(state: AppData, id: string, emoji: string, name: string, days?: number[]): AppData {
   const trimmed = name.trim()
   if (!trimmed) return state
   return {
     ...state,
-    habits: state.habits.map((h) => (h.id === id ? { ...h, emoji: emoji || h.emoji, name: trimmed.slice(0, 40) } : h)),
+    habits: state.habits.map((h) => {
+      if (h.id !== id) return h
+      const { days: _old, ...rest } = h
+      const schedule = normalizeDays(days)
+      return { ...rest, emoji: emoji || h.emoji, name: trimmed.slice(0, 40), ...(schedule ? { days: schedule } : {}) }
+    }),
   }
 }
 

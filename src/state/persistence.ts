@@ -1,4 +1,5 @@
 import { STORAGE_KEY } from '../config/app'
+import { normalizeDays } from '../lib/habits'
 import { defaultStorage, readJson, writeJson, type StorageAdapter } from '../lib/storage'
 import { createInitialData, type AppData } from './types'
 
@@ -13,7 +14,11 @@ export function normalize(raw: Partial<AppData> | null): AppData {
     profile: { ...base.profile, ...raw.profile },
     companion: { ...base.companion, ...raw.companion },
     settings: { ...base.settings, ...raw.settings, reminders: raw.settings?.reminders ?? [] },
-    habits: raw.habits ?? [],
+    // a habit's weekdays are cleaned (a damaged or hand-edited file cannot leave a habit that is never due)
+    habits: (raw.habits ?? []).map(({ days, ...habit }) => {
+      const clean = normalizeDays(days)
+      return clean ? { ...habit, days: clean } : habit
+    }),
     completions: raw.completions ?? {},
     xpClaims: raw.xpClaims ?? {},
     checkIns: raw.checkIns ?? {},

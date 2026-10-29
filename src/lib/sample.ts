@@ -5,6 +5,7 @@ import { checkInClaimKey, habitClaimKey } from '../state/actions'
 import type { AppData, BreathSession, CheckIn, Habit } from '../state/types'
 import { PRESETS } from './breathing'
 import { addDays, toDateKey, type DateKey } from './dates'
+import { isDueOn } from './habits'
 import { XP_REWARDS } from './xp'
 
 /** How many days of made-up history the sample holds (not counting today). */
@@ -21,11 +22,11 @@ function seeded(seed: number): () => number {
   }
 }
 
-const SAMPLE_HABITS: { id: string; emoji: string; key: MessageKey; chance: number }[] = [
+const SAMPLE_HABITS: { id: string; emoji: string; key: MessageKey; chance: number; days?: number[] }[] = [
   { id: 'sample-water', emoji: '💧', key: 'habit.water', chance: 0.85 },
   { id: 'sample-outside', emoji: '🌤️', key: 'habit.outside', chance: 0.6 },
   { id: 'sample-stretch', emoji: '🧘', key: 'habit.stretch', chance: 0.55 },
-  { id: 'sample-friend', emoji: '💬', key: 'habit.friend', chance: 0.4 },
+  { id: 'sample-friend', emoji: '💬', key: 'habit.friend', chance: 0.4, days: [1, 3, 5] }, // Mon, Wed, Fri: a habit with its own days
   { id: 'sample-screens', emoji: '🌙', key: 'habit.screens', chance: 0.5 },
 ]
 
@@ -47,6 +48,7 @@ export function createSampleData(now: Date = new Date(), text: SampleText = (key
     emoji: h.emoji,
     name: text(h.key),
     createdAt: addDays(today, -SAMPLE_DAYS) + 'T09:00:00.000Z',
+    ...(h.days ? { days: h.days } : {}),
   }))
 
   const completions: AppData['completions'] = {}
@@ -60,7 +62,8 @@ export function createSampleData(now: Date = new Date(), text: SampleText = (key
     if (rng() < 0.2) continue // a quiet day: nothing at all, and that is fine
     // a gentle upward drift: later days are a little more likely to be busy
     const energy = 0.85 + ((SAMPLE_DAYS - back) / SAMPLE_DAYS) * 0.3
-    const done = SAMPLE_HABITS.filter((h) => rng() < h.chance * energy).map((h) => h.id)
+    // (the random number is drawn first for every habit, so adding a schedule never changes anything else in the sample)
+    const done = SAMPLE_HABITS.filter((h) => rng() < h.chance * energy && isDueOn(h, date)).map((h) => h.id)
     if (done.length) {
       completions[date] = done
       for (const id of done) {

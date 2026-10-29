@@ -17,8 +17,8 @@ export interface AppApi {
   today: string
   level: LevelInfo
   toggleHabit: (id: string, source?: Element | null) => void
-  addHabit: (emoji: string, name: string) => void
-  updateHabit: (id: string, emoji: string, name: string) => void
+  addHabit: (emoji: string, name: string, days?: number[]) => void
+  updateHabit: (id: string, emoji: string, name: string, days?: number[]) => void
   deleteHabit: (id: string) => void
   saveCheckIn: (mood: Mood, note: string, source?: Element | null) => void
   completeBreathing: (presetId: PresetId, seconds: number, source?: Element | null) => void
@@ -42,7 +42,7 @@ export interface AppApi {
   setPreviewPalette: (palette: PaletteId | null) => void
 }
 
-export const MAX_SAMPLE_LEVEL = 20
+export const MAX_SAMPLE_LEVEL = 30
 
 const AppContext = createContext<AppApi | null>(null)
 
@@ -95,8 +95,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       today,
       level: getLevelInfo(data.xp),
       toggleHabit: (id, source) => commit(A.toggleHabit(ref.current, id, toDateKey()), originOf(source)),
-      addHabit: (emoji, name) => set(A.addHabit(ref.current, emoji, name)),
-      updateHabit: (id, emoji, name) => set(A.updateHabit(ref.current, id, emoji, name)),
+      addHabit: (emoji, name, days) => set(A.addHabit(ref.current, emoji, name, new Date(), days)),
+      updateHabit: (id, emoji, name, days) => set(A.updateHabit(ref.current, id, emoji, name, days)),
       deleteHabit: (id) => set(A.deleteHabit(ref.current, id)),
       saveCheckIn: (mood, note, source) => commit(A.saveCheckIn(ref.current, toDateKey(), mood, note), originOf(source)),
       completeBreathing: (presetId, seconds, source) =>

@@ -7,11 +7,13 @@ interface Props {
   habit: Habit
   done: boolean
   daysThisMonth: number
+  /** e.g. "Only Mon · Wed" for a habit that is not for every day */
+  schedule?: string
   onToggle: (el: Element | null) => void
   onEdit: () => void
 }
 
-export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props) {
+export function HabitRow({ habit, done, daysThisMonth, schedule, onToggle, onEdit }: Props) {
   const check = useRef<HTMLButtonElement>(null)
   const { t, tn } = useI18n()
   return (
@@ -59,6 +61,7 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
       <div className="min-w-0 flex-1">
         <p className={`truncate text-base font-bold ${done ? 'text-accent-strong' : ''}`}>{habit.name}</p>
         <p className="text-xs text-ink-soft">
+          {schedule ? `${schedule} · ` : ''}
           {daysThisMonth === 0 ? t('habit.row.fresh') : tn('habit.row.days', daysThisMonth)}
         </p>
       </div>
