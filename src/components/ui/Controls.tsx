@@ -30,7 +30,7 @@ interface SegProps<T extends string | number> {
 export function Segmented<T extends string | number>({ value, options, onChange, label }: SegProps<T>) {
   const group = useId()
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full bg-surface2 p-1">
+    <div role="radiogroup" aria-label={label} className="inline-flex max-w-full flex-wrap rounded-3xl bg-surface2 p-1">
       {options.map((o) => {
         const active = o.value === value
         return (

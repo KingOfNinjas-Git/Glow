@@ -14,6 +14,7 @@ export function useHashRoute(): [Route, (r: Route) => void] {
   useEffect(() => {
     const onChange = () => setRoute(parse())
     window.addEventListener('hashchange', onChange)
+    onChange() // the address may have changed between the first draw and now (a very quick tap): catch up
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
   const go = useCallback((r: Route) => {
