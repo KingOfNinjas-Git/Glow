@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
+import { m, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { advanceElapsed, phaseAt, type BreathPreset, type PhaseState } from '../lib/breathing'
 
@@ -70,7 +70,7 @@ export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }
       <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
         <svg viewBox="0 0 40 40" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
           <circle cx="20" cy="20" r="18" fill="none" stroke="var(--line)" strokeWidth="0.8" />
-          <motion.circle
+          <m.circle
             cx="20"
             cy="20"
             r="18"
@@ -82,7 +82,7 @@ export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }
             style={{ strokeDasharray: dash }}
           />
         </svg>
-        <motion.div
+        <m.div
           style={{ scale }}
           className="flex h-60 w-60 items-center justify-center rounded-full bg-accent-grad shadow-soft sm:h-64 sm:w-64"
         >
@@ -94,7 +94,7 @@ export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }
               {phase.secondsLeft}
             </p>
           </div>
-        </motion.div>
+        </m.div>
       </div>
       <p className="sr-only" role="status" aria-live="polite">
         {phase.label}

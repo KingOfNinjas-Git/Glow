@@ -1,4 +1,4 @@
-import { motion, type HTMLMotionProps } from 'framer-motion'
+import { m, type HTMLMotionProps } from 'framer-motion'
 
 type Variant = 'primary' | 'soft' | 'ghost' | 'danger'
 
@@ -16,7 +16,7 @@ interface Props extends HTMLMotionProps<'button'> {
 
 export function Button({ variant = 'primary', size = 'md', className = '', ...rest }: Props) {
   return (
-    <motion.button
+    <m.button
       whileTap={{ scale: 0.96 }}
       whileHover={{ scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}

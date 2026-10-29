@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useRef, useState } from 'react'
 import { BreathCircle } from '../components/BreathCircle'
 import { Button } from '../components/ui/Button'
@@ -42,7 +42,7 @@ export function Breathe() {
       </header>
 
       {stage === 'setup' && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div role="radiogroup" aria-label="Breathing style" className="grid gap-3">
             {PRESETS.map((p) => {
               const active = p.id === presetId
@@ -77,7 +77,7 @@ export function Breathe() {
               Begin · +{XP_REWARDS.breathing} XP
             </Button>
           </div>
-        </motion.div>
+        </m.div>
       )}
 
       {stage === 'running' && (
@@ -100,7 +100,7 @@ export function Breathe() {
 
       {stage === 'done' && (
         <Card className="space-y-4 bg-gradient-to-b from-accent-soft to-surface py-10 text-center">
-          <motion.p
+          <m.p
             className="text-6xl"
             aria-hidden="true"
             initial={{ scale: 0.4, rotate: -15 }}
@@ -108,7 +108,7 @@ export function Breathe() {
             transition={{ type: 'spring', stiffness: 220, damping: 12 }}
           >
             🌸
-          </motion.p>
+          </m.p>
           <h2 className="text-2xl font-extrabold">Nicely done.</h2>
           <p className="mx-auto max-w-xs text-ink-soft">
             You gave yourself {minutes} {minutes === 1 ? 'minute' : 'minutes'} of calm. Notice how your shoulders feel.

@@ -43,6 +43,8 @@ export interface Settings {
   lastReminderMessage?: number
   /** a soft vibration on each breathing phase (phones that support it) */
   haptics: boolean
+  /** when the last backup was downloaded, to nudge for a new one */
+  lastBackupAt?: string
 }
 
 export interface AppData {
@@ -59,6 +61,8 @@ export interface AppData {
   breaths: BreathSession[]
   companion: { name: string }
   settings: Settings
+  /** true while the app holds the made-up "try it" data instead of someone's own */
+  sample?: boolean
 }
 
 export const createInitialData = (now: Date = new Date()): AppData => ({

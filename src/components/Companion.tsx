@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useState } from 'react'
 import { COMPANION_LINES } from '../data/content'
 import { accessoriesForLevel, stageForLevel, type AccessoryId } from '../data/unlocks'
@@ -95,7 +95,7 @@ function Accessories({ items, topY, reduce }: { items: AccessoryId[]; topY: numb
           [150, 112, 1.6],
           [42, 118, 2.2],
         ].map(([x, y, delay]) => (
-          <motion.path
+          <m.path
             key={`${x}-${y}`}
             d={`M${x} ${y - 7} L${x + 2} ${y - 2} L${x + 7} ${y} L${x + 2} ${y + 2} L${x} ${y + 7} L${x - 2} ${y + 2} L${x - 7} ${y} L${x - 2} ${y - 2} Z`}
             fill="#ffe08a"
@@ -128,7 +128,7 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
     <div className="relative flex flex-col items-center">
       <AnimatePresence>
         {line && (
-          <motion.p
+          <m.p
             key={line}
             role="status"
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -137,10 +137,10 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
             className="absolute -top-2 z-10 max-w-[16rem] rounded-2xl bg-surface px-4 py-2 text-center text-sm font-semibold shadow-soft"
           >
             {line}
-          </motion.p>
+          </m.p>
         )}
       </AnimatePresence>
-      <motion.button
+      <m.button
         type="button"
         onClick={poke}
         aria-label={`${name}, your ${stage.name.toLowerCase()} companion. Tap to say hi`}
@@ -152,13 +152,13 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
       >
         <svg viewBox={`0 ${vy} 200 ${200 - vy}`} width="100%" height="100%" role="img" aria-hidden="true">
           <ellipse cx="100" cy="186" rx="52" ry="7" fill="currentColor" opacity="0.08" />
-          <motion.g
+          <m.g
             style={{ transformOrigin: `100px ${BASE_Y}px` }}
             animate={reduce ? undefined : { rotate: [-2, 2, -2] }}
             transition={reduce ? undefined : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           >
             <Plant stage={stage.stage} />
-          </motion.g>
+          </m.g>
           {/* pot */}
           <path d="M66 124 H134 L126 180 Q125 186 119 186 H81 Q75 186 74 180 Z" fill="var(--accent)" />
           <path d="M66 124 H134 L132 138 H68 Z" fill="var(--accent-2)" opacity="0.55" />
@@ -172,7 +172,7 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
           <path d="M92 157 Q100 164 108 157" stroke="#2d2a3e" strokeWidth="2.6" strokeLinecap="round" fill="none" />
           <Accessories items={accessories} topY={topY} reduce={reduce} />
         </svg>
-      </motion.button>
+      </m.button>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useRef } from 'react'
 import type { Habit } from '../state/types'
 
@@ -13,7 +13,7 @@ interface Props {
 export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props) {
   const check = useRef<HTMLButtonElement>(null)
   return (
-    <motion.li
+    <m.li
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -22,7 +22,7 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
         done ? 'border-transparent bg-accent-soft' : 'border-line bg-surface'
       }`}
     >
-      <motion.button
+      <m.button
         ref={check}
         type="button"
         role="checkbox"
@@ -36,7 +36,7 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
       >
         <AnimatePresence mode="wait" initial={false}>
           {done ? (
-            <motion.svg
+            <m.svg
               key="check"
               viewBox="0 0 24 24"
               className="h-6 w-6 text-on-accent"
@@ -46,14 +46,14 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
               transition={{ type: 'spring', stiffness: 500, damping: 18 }}
             >
               <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-            </motion.svg>
+            </m.svg>
           ) : (
-            <motion.span key="emoji" initial={{ scale: 0.6 }} animate={{ scale: 1 }} exit={{ scale: 0 }} aria-hidden="true">
+            <m.span key="emoji" initial={{ scale: 0.6 }} animate={{ scale: 1 }} exit={{ scale: 0 }} aria-hidden="true">
               {habit.emoji}
-            </motion.span>
+            </m.span>
           )}
         </AnimatePresence>
-      </motion.button>
+      </m.button>
       <div className="min-w-0 flex-1">
         <p className={`truncate text-base font-bold ${done ? 'text-accent-strong' : ''}`}>{habit.name}</p>
         <p className="text-xs text-ink-soft">
@@ -68,6 +68,6 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
       >
         ⋯
       </button>
-    </motion.li>
+    </m.li>
   )
 }

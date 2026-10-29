@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import type { LevelInfo } from '../lib/xp'
 
 export function XpBar({ info }: { info: LevelInfo }) {
@@ -18,7 +18,7 @@ export function XpBar({ info }: { info: LevelInfo }) {
         aria-valuenow={info.xpIntoLevel}
         className="h-4 overflow-hidden rounded-full bg-surface2"
       >
-        <motion.div
+        <m.div
           className="h-full rounded-full bg-accent-grad"
           initial={false}
           animate={{ width: `${Math.max(info.progress * 100, info.xpIntoLevel > 0 ? 4 : 0)}%` }}

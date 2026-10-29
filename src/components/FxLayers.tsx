@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useEffect, useMemo } from 'react'
 import { useFx } from '../state/FxContext'
 import { Button } from './ui/Button'
@@ -11,7 +11,7 @@ function FloatingXp() {
     <div className="pointer-events-none fixed inset-0 z-50" aria-hidden="true">
       <AnimatePresence>
         {floats.map((f) => (
-          <motion.div
+          <m.div
             key={f.id}
             initial={{ opacity: 0, y: 0, scale: 0.7 }}
             animate={{ opacity: [0, 1, 1, 0], y: reduce ? -10 : -70, scale: [0.7, 1.15, 1, 1] }}
@@ -21,7 +21,7 @@ function FloatingXp() {
             style={{ left: f.x, top: f.y }}
           >
             +{f.amount} XP
-          </motion.div>
+          </m.div>
         ))}
       </AnimatePresence>
     </div>
@@ -47,7 +47,7 @@ function Confetti() {
   return (
     <div className="pointer-events-none absolute left-1/2 top-24" aria-hidden="true">
       {pieces.map((p) => (
-        <motion.span
+        <m.span
           key={p.id}
           className={`absolute block h-3 w-3 ${p.round ? 'rounded-full' : 'rounded-sm'}`}
           style={{ background: p.color }}
@@ -68,14 +68,14 @@ function LevelUp() {
       {levelUp && (
         <div className="relative text-center">
           {!reduce && <Confetti />}
-          <motion.div
+          <m.div
             initial={reduce ? false : { scale: 0.3, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 14 }}
             className="mx-auto mb-3 flex h-28 w-28 items-center justify-center rounded-full bg-accent-grad text-5xl font-black text-on-accent shadow-soft"
           >
             {levelUp.level}
-          </motion.div>
+          </m.div>
           <p className="text-lg font-bold">Level {levelUp.level}, look at you glow ✨</p>
           <p className="mt-1 text-ink-soft">Showing up is the whole game, and you keep doing it.</p>
           {levelUp.unlocks.length > 0 && (
@@ -116,7 +116,7 @@ function ToastCard({ id, title, body, onDone }: { id: number; title: string; bod
     return () => window.clearTimeout(t)
   }, [id, onDone])
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, y: -24 }}
       animate={{ opacity: 1, y: 0 }}
@@ -130,7 +130,7 @@ function ToastCard({ id, title, body, onDone }: { id: number; title: string; bod
       <button className="rounded-full px-2 py-1 text-sm font-bold text-ink-soft" onClick={() => onDone(id)} aria-label="Dismiss reminder">
         ✕
       </button>
-    </motion.div>
+    </m.div>
   )
 }
 

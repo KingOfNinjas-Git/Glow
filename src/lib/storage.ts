@@ -34,6 +34,18 @@ export class LocalStorageAdapter implements StorageAdapter {
       this.memory.delete(key)
     }
   }
+
+  /** False when the browser refuses to save anything (blocked site data): progress then lasts only until the tab closes. */
+  isPersistent(): boolean {
+    try {
+      const probe = '__probe__'
+      window.localStorage.setItem(probe, '1')
+      window.localStorage.removeItem(probe)
+      return true
+    } catch {
+      return false
+    }
+  }
 }
 
 export class MemoryStorageAdapter implements StorageAdapter {
@@ -56,4 +68,4 @@ export function writeJson(adapter: StorageAdapter, key: string, value: unknown):
   adapter.setItem(key, JSON.stringify(value))
 }
 
-export const defaultStorage: StorageAdapter = new LocalStorageAdapter()
+export const defaultStorage = new LocalStorageAdapter()

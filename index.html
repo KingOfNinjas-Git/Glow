@@ -3,19 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="__APP_TAGLINE__" />
+    <title>__APP_TITLE__</title>
+    <meta name="description" content="__APP_DESCRIPTION__" />
+    <link rel="canonical" href="__SITE_URL__/" />
     <meta name="theme-color" content="#fff9f4" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1827" media="(prefers-color-scheme: dark)" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="__APP_NAME__" />
-    <meta property="og:title" content="__APP_NAME__" />
-    <meta property="og:description" content="__APP_TAGLINE__" />
-    <meta name="twitter:card" content="summary" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="__APP_NAME__" />
+    <meta name="author" content="__AUTHOR_NAME__" />
+
+    <!-- How the link looks when someone shares it -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="__APP_NAME__" />
+    <meta property="og:title" content="__APP_TITLE__" />
+    <meta property="og:description" content="__APP_DESCRIPTION__" />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:image" content="__SITE_URL__/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="__APP_NAME__ on a computer and a phone: a little plant companion, tiny habits and a mood chart" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="__APP_TITLE__" />
+    <meta name="twitter:description" content="__APP_DESCRIPTION__" />
+    <meta name="twitter:image" content="__SITE_URL__/og-image.png" />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>__APP_NAME__</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "__APP_NAME__",
+        "url": "__SITE_URL__/",
+        "description": "__APP_DESCRIPTION__",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Any (runs in the browser, installable)",
+        "browserRequirements": "Requires JavaScript",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "image": "__SITE_URL__/og-image.png",
+        "author": { "@type": "Person", "name": "__AUTHOR_NAME__", "url": "__AUTHOR_URL__" }
+      }
+    </script>
+
+    <style>
+      /* What shows for a moment before the app starts (and for anything that does not run scripts). */
+      .boot { min-height: 100dvh; display: grid; place-content: center; gap: 0.5rem; padding: 2rem; text-align: center; font: 600 1rem/1.5 system-ui, sans-serif; color: #2a2233; background: #fff9f4; }
+      .boot h1 { margin: 0; font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; }
+      .boot p { margin: 0; color: #5d5470; max-width: 28rem; }
+      .dark .boot { color: #f4eefb; background: #1c1827; }
+      .dark .boot p { color: #c9bfdb; }
+    </style>
     <script>
       // Apply saved theme before first paint to avoid a flash.
       try {
@@ -28,7 +66,14 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot">
+        <h1>✦ __APP_NAME__</h1>
+        <p>__APP_TAGLINE__</p>
+        <p>Tiny habits, breathing exercises and mood check-ins that grow a little plant. No account, and nothing leaves your device.</p>
+        <noscript><p><strong>__APP_NAME__ needs JavaScript to run.</strong> Please turn it on and reload.</p></noscript>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

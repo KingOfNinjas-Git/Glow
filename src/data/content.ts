@@ -55,7 +55,7 @@ export const REMINDER_MESSAGES: { title: string; body: string }[] = [
 
 export const GREETINGS = {
   morning: ['Good morning', 'Rise and glow', 'Morning'],
-  afternoon: ['Hey there', 'Afternoon', 'Hi hi'],
+  afternoon: ['Hey there', 'Good afternoon', 'Hi there'],
   evening: ['Good evening', 'Hey, night owl', 'Evening'],
 } as const
 

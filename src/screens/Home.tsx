@@ -1,8 +1,10 @@
 import { AnimatePresence } from 'framer-motion'
 import { useMemo, useState } from 'react'
+import { BackupNudge } from '../components/BackupNudge'
 import { Companion } from '../components/Companion'
 import { HabitForm } from '../components/HabitForm'
 import { HabitRow } from '../components/HabitRow'
+import { TryList } from '../components/TryList'
 import { XpBar } from '../components/XpBar'
 import { Button } from '../components/ui/Button'
 import { Card, SectionTitle } from '../components/ui/Card'
@@ -59,6 +61,9 @@ export function Home() {
           {monthDays > 0 ? `You showed up ${monthDays} ${monthDays === 1 ? 'day' : 'days'} this month. That counts.` : 'A fresh page. No scoreboard, just you.'}
         </p>
       </header>
+
+      <TryList />
+      <BackupNudge />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_1fr]">
         <Card className="flex flex-col items-center gap-4 bg-gradient-to-b from-accent-soft to-surface text-center lg:self-start">

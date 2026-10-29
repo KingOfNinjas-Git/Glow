@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { MOODS, moodInfo, type Mood } from '../data/content'
 import { formatWeekday, lastNDays, type DateKey } from '../lib/dates'
 import type { CheckIn } from '../state/types'
@@ -6,16 +6,16 @@ import type { CheckIn } from '../state/types'
 export function MoodPicker({ value, onChange }: { value: Mood | null; onChange: (m: Mood) => void }) {
   return (
     <div role="radiogroup" aria-label="How are you feeling?" className="grid grid-cols-5 gap-2 sm:gap-3">
-      {MOODS.map((m) => {
-        const active = value === m.value
+      {MOODS.map((mood) => {
+        const active = value === mood.value
         return (
-          <motion.button
-            key={m.value}
+          <m.button
+            key={mood.value}
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={m.label}
-            onClick={() => onChange(m.value)}
+            aria-label={mood.label}
+            onClick={() => onChange(mood.value)}
             whileTap={{ scale: 0.9 }}
             animate={{ scale: active ? 1.08 : 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 18 }}
@@ -23,9 +23,9 @@ export function MoodPicker({ value, onChange }: { value: Mood | null; onChange: 
               active ? 'border-accent-strong bg-accent-soft' : 'border-line bg-surface'
             }`}
           >
-            <span className="text-3xl sm:text-4xl" aria-hidden="true">{m.emoji}</span>
-            <span className={`text-xs font-bold ${active ? 'text-accent-strong' : 'text-ink-soft'}`}>{m.label}</span>
-          </motion.button>
+            <span className="text-3xl sm:text-4xl" aria-hidden="true">{mood.emoji}</span>
+            <span className={`text-xs font-bold ${active ? 'text-accent-strong' : 'text-ink-soft'}`}>{mood.label}</span>
+          </m.button>
         )
       })}
     </div>
@@ -52,7 +52,7 @@ export function MoodHistory({ days, checkIns, today }: { days: number; checkIns:
               aria-label={info ? `${k}: ${info.label}` : `${k}: no check-in`}
             >
               {!dense && info && <span className="text-lg" aria-hidden="true">{info.emoji}</span>}
-              <motion.div
+              <m.div
                 initial={{ height: 0 }}
                 animate={{ height: info ? `${info.value * 16 + 8}%` : '6%' }}
                 transition={{ type: 'spring', stiffness: 140, damping: 18 }}

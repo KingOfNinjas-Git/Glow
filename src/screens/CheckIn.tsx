@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { MoodHistory, MoodPicker } from '../components/Mood'
 import { Button } from '../components/ui/Button'
@@ -89,7 +89,7 @@ export function CheckIn() {
           <SectionTitle>Little notes</SectionTitle>
           <ul className="space-y-2">
             {recent.map((c) => (
-              <motion.li key={c.date} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 rounded-2xl bg-surface2 p-3">
+              <m.li key={c.date} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 rounded-2xl bg-surface2 p-3">
                 <span className="text-2xl" aria-hidden="true">{moodInfo(c.mood).emoji}</span>
                 <div>
                   <p className="text-xs font-bold text-ink-soft">
@@ -97,7 +97,7 @@ export function CheckIn() {
                   </p>
                   <p>{c.note}</p>
                 </div>
-              </motion.li>
+              </m.li>
             ))}
           </ul>
         </Card>

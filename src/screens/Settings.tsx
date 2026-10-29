@@ -1,23 +1,15 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useAbout } from '../components/About'
 import { ReminderSettings } from '../components/ReminderSettings'
 import { Button } from '../components/ui/Button'
 import { Card, SectionTitle } from '../components/ui/Card'
 import { Segmented, Switch } from '../components/ui/Controls'
 import { Modal } from '../components/ui/Modal'
-import { APP_NAME } from '../config/app'
+import { describeLastBackup, downloadBackup } from '../lib/backup'
 import { PALETTES } from '../data/unlocks'
 import { useApp } from '../state/AppContext'
 import { parseBackup } from '../state/persistence'
 import type { AppData, ThemeMode } from '../state/types'
-
-function exportData(json: string) {
-  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${APP_NAME.toLowerCase()}-backup-${new Date().toISOString().slice(0, 10)}.json`
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 export function Settings() {
   const app = useApp()
@@ -26,6 +18,12 @@ export function Settings() {
   const [pendingRestore, setPendingRestore] = useState<AppData | null>(null)
   const [restoreMessage, setRestoreMessage] = useState<{ text: string; good: boolean } | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
+  const about = useAbout()
+  const { setPreviewPalette } = app
+  const previewTheme = PALETTES.find((p) => p.id === app.previewPalette)
+
+  // A preview only lasts while Settings is open, so it can never be mistaken for the real theme.
+  useEffect(() => () => setPreviewPalette(null), [setPreviewPalette])
 
   /** Read the chosen file, check it is a real backup, then ask before replacing anything. */
   const chooseBackup = async (file: File | undefined) => {
@@ -84,21 +82,28 @@ export function Settings() {
           />
         </div>
         <div>
-          <p className="mb-2 text-sm font-bold text-ink-soft">Theme (unlock more by leveling up)</p>
+          <p className="mb-2 text-sm font-bold text-ink-soft">Theme (unlock more by leveling up, or tap a locked one to preview it)</p>
           <div role="radiogroup" aria-label="Theme" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {PALETTES.map((p) => {
               const locked = level.level < p.unlockLevel
-              const active = data.settings.palette === p.id
+              const previewing = app.previewPalette === p.id
+              const active = !app.previewPalette && data.settings.palette === p.id
               return (
                 <button
                   key={p.id}
                   type="button"
                   role="radio"
-                  aria-checked={active}
-                  disabled={locked}
-                  onClick={() => app.updateSettings({ palette: p.id })}
-                  className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left disabled:opacity-60 ${
-                    active ? 'border-accent-strong bg-accent-soft' : 'border-line bg-surface'
+                  aria-checked={active || previewing}
+                  onClick={() => {
+                    if (locked) {
+                      app.setPreviewPalette(p.id)
+                    } else {
+                      app.setPreviewPalette(null)
+                      app.updateSettings({ palette: p.id })
+                    }
+                  }}
+                  className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left ${
+                    active || previewing ? 'border-accent-strong bg-accent-soft' : 'border-line bg-surface'
                   }`}
                 >
                   <span
@@ -108,12 +113,24 @@ export function Settings() {
                   />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">{p.name}</span>
-                    <span className="block text-xs text-ink-soft">{locked ? `🔒 Level ${p.unlockLevel}` : active ? 'In use' : 'Unlocked'}</span>
+                    <span className="block text-xs text-ink-soft">
+                      {previewing ? 'Previewing' : locked ? `🔒 Preview · level ${p.unlockLevel}` : active ? 'In use' : 'Unlocked'}
+                    </span>
                   </span>
                 </button>
               )
             })}
           </div>
+          {previewTheme && (
+            <p role="status" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-accent-soft p-3 text-sm">
+              <span>
+                Previewing <strong>{previewTheme.name}</strong>: it unlocks at level {previewTheme.unlockLevel}. Only the look changes, not your progress.
+              </span>
+              <Button variant="soft" onClick={() => app.setPreviewPalette(null)}>
+                Stop preview
+              </Button>
+            </p>
+          )}
         </div>
       </Card>
 
@@ -135,9 +152,17 @@ export function Settings() {
 
       <Card className="space-y-3">
         <SectionTitle>Your data</SectionTitle>
-        <p className="text-sm text-ink-soft">Everything lives on this device only. Nothing is uploaded anywhere.</p>
+        <p className="text-sm text-ink-soft">
+          Everything lives in this browser only. Nothing is uploaded anywhere. Last backup: <strong>{describeLastBackup(data.settings.lastBackupAt)}</strong>.
+        </p>
         <div className="flex flex-wrap gap-2">
-          <Button variant="soft" onClick={() => exportData(JSON.stringify(data, null, 2))}>
+          <Button
+            variant="soft"
+            onClick={() => {
+              downloadBackup(data)
+              app.updateSettings({ lastBackupAt: new Date().toISOString() })
+            }}
+          >
             Download a backup
           </Button>
           <Button variant="soft" onClick={() => fileInput.current?.click()}>
@@ -164,6 +189,16 @@ export function Settings() {
         <p className="text-sm text-ink-soft">
           Moving to a new phone, or between the website and the app? Download a backup on one, then restore it on the other.
         </p>
+      </Card>
+
+      <Card className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <SectionTitle>About</SectionTitle>
+          <p className="-mt-2 text-sm text-ink-soft">Who made this, how it works, and where your data lives.</p>
+        </div>
+        <Button variant="soft" onClick={about}>
+          About this project
+        </Button>
       </Card>
 
       <Modal open={pendingRestore !== null} onClose={() => setPendingRestore(null)} title="Restore this backup?">

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 interface Props {
@@ -37,14 +37,14 @@ export function Modal({ open, onClose, title, children }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           className="fixed inset-0 z-40 flex items-end justify-center bg-[#1c1827]/50 p-0 sm:items-center sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={{ opacity: 0, pointerEvents: 'none' }} // a closing box must not catch the next click
           onMouseDown={(e) => e.target === e.currentTarget && onClose()}
         >
-          <motion.div
+          <m.div
             ref={panel}
             role="dialog"
             aria-modal="true"
@@ -60,8 +60,8 @@ export function Modal({ open, onClose, title, children }: Props) {
               {title}
             </h2>
             {children}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

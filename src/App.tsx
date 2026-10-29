@@ -1,18 +1,27 @@
-import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import { AnimatePresence, LazyMotion, MotionConfig, m } from 'framer-motion'
+import { lazy, Suspense, type ComponentType } from 'react'
+import { AboutProvider } from './components/About'
 import { FxLayers } from './components/FxLayers'
 import { Nav } from './components/Nav'
+import { SampleBar } from './components/SampleBar'
 import { useHashRoute, type Route } from './hooks/useHashRoute'
+import { usePersistentStorage } from './hooks/usePersistentStorage'
 import { useReminderScheduler } from './hooks/useReminderScheduler'
+import { useShortcuts } from './hooks/useShortcuts'
 import { useTheme } from './hooks/useTheme'
-import { Breathe } from './screens/Breathe'
-import { CheckIn } from './screens/CheckIn'
 import { Home } from './screens/Home'
 import { Onboarding } from './screens/Onboarding'
-import { Progress } from './screens/Progress'
-import { Settings } from './screens/Settings'
 import { useApp } from './state/AppContext'
 
-const SCREENS: Record<Route, () => React.ReactElement> = {
+// Only the home screen ships with the first load; the others arrive the first time they are opened (and are cached for offline).
+const Breathe = lazy(() => import('./screens/Breathe').then((mod) => ({ default: mod.Breathe })))
+const CheckIn = lazy(() => import('./screens/CheckIn').then((mod) => ({ default: mod.CheckIn })))
+const Progress = lazy(() => import('./screens/Progress').then((mod) => ({ default: mod.Progress })))
+const Settings = lazy(() => import('./screens/Settings').then((mod) => ({ default: mod.Settings })))
+
+const loadMotionFeatures = () => import('./lib/motionFeatures').then((mod) => mod.default)
+
+const SCREENS: Record<Route, ComponentType> = {
   home: Home,
   breathe: Breathe,
   checkin: CheckIn,
@@ -21,10 +30,12 @@ const SCREENS: Record<Route, () => React.ReactElement> = {
 }
 
 function Shell() {
-  const { data } = useApp()
+  const { data, previewPalette } = useApp()
   const [route, go] = useHashRoute()
-  useTheme(data.settings.themeMode, data.settings.palette)
+  useTheme(data.settings.themeMode, previewPalette ?? data.settings.palette)
   useReminderScheduler()
+  useShortcuts(go)
+  usePersistentStorage(data.profile.onboarded && !data.sample)
 
   if (!data.profile.onboarded) return <Onboarding />
 
@@ -32,18 +43,24 @@ function Shell() {
   return (
     <>
       <Nav route={route} onGo={go} />
-      <main className="safe-top mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 md:ml-60 md:w-auto md:max-w-none md:px-10 md:pb-12 lg:px-14">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={route}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Screen />
-          </motion.div>
-        </AnimatePresence>
+      {/* The sidebar takes 15rem on a computer; the content then sits centred in the rest, never stretched edge to edge. */}
+      <main className="px-4 pb-28 pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6 md:ml-60 md:px-10 md:pb-16 md:pt-10 lg:px-14">
+        <div className="mx-auto w-full max-w-5xl">
+          <SampleBar />
+          <AnimatePresence mode="wait" initial={false}>
+            <m.div
+              key={route}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Suspense fallback={null}>
+                <Screen />
+              </Suspense>
+            </m.div>
+          </AnimatePresence>
+        </div>
       </main>
     </>
   )
@@ -51,9 +68,13 @@ function Shell() {
 
 export default function App() {
   return (
-    <MotionConfig reducedMotion="user">
-      <Shell />
-      <FxLayers />
-    </MotionConfig>
+    <LazyMotion features={loadMotionFeatures} strict>
+      <MotionConfig reducedMotion="user">
+        <AboutProvider>
+          <Shell />
+        </AboutProvider>
+        <FxLayers />
+      </MotionConfig>
+    </LazyMotion>
   )
 }

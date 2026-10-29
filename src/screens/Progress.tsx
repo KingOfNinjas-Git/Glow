@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Companion } from '../components/Companion'
 import { XpBar } from '../components/XpBar'
 import { Card, SectionTitle } from '../components/ui/Card'
-import { ACCESSORIES, PALETTES, STAGES } from '../data/unlocks'
+import { ACCESSORIES, PALETTES, STAGES, stageForLevel } from '../data/unlocks'
 import { formatMonthName, monthDays } from '../lib/dates'
 import {
   activeDaysThisMonth,
@@ -13,6 +14,9 @@ import {
   totalHabitCompletions,
 } from '../lib/stats'
 import { useApp } from '../state/AppContext'
+
+/** The highest level that unlocks anything today (the crown). */
+const MAX_PREVIEW_LEVEL = 15
 
 function Stat({ value, label, emoji }: { value: string | number; label: string; emoji: string }) {
   return (
@@ -29,6 +33,8 @@ export function Progress() {
   const days = activeDaysThisMonth(data, today)
   const showedUp = showedUpDays(data, today)
   const month = formatMonthName(today)
+  const [previewLevel, setPreviewLevel] = useState(Math.min(level.level, MAX_PREVIEW_LEVEL))
+  const wearing = ACCESSORIES.filter((a) => previewLevel >= a.unlockLevel).map((a) => a.name.toLowerCase())
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -46,6 +52,35 @@ export function Progress() {
         <div className="space-y-3">
           <p className="text-lg font-extrabold">{data.xp} XP earned in total</p>
           <XpBar info={level} />
+        </div>
+      </Card>
+
+      <Card>
+        <SectionTitle hint="preview only">Meet your companion at any level</SectionTitle>
+        <div className="grid items-center gap-4 sm:grid-cols-[auto_1fr]">
+          <div className="mx-auto">
+            <Companion level={previewLevel} name={data.companion.name} size={140} />
+          </div>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="mb-1 block font-bold" id="preview-level-label">
+                Level {previewLevel} · {stageForLevel(previewLevel).name}
+              </span>
+              <input
+                type="range"
+                min={1}
+                max={MAX_PREVIEW_LEVEL}
+                value={previewLevel}
+                onChange={(e) => setPreviewLevel(Number(e.target.value))}
+                aria-labelledby="preview-level-label"
+                aria-valuetext={`Level ${previewLevel}, ${stageForLevel(previewLevel).name}`}
+                className="w-full accent-[var(--accent-strong)]"
+              />
+            </label>
+            <p className="text-sm text-ink-soft">
+              {wearing.length ? `Wearing: ${wearing.join(', ')}.` : 'No accessories yet.'} This is only a preview: your real level stays {level.level}.
+            </p>
+          </div>
         </div>
       </Card>
 
@@ -88,7 +123,9 @@ export function Progress() {
                 <span className="font-semibold">
                   <span aria-hidden="true">{h.emoji}</span> {h.name}
                 </span>
-                <span className="text-sm font-bold text-accent-strong">{habitDaysThisMonth(data, h.id, today)} days this month</span>
+                <span className="text-sm font-bold text-accent-strong">
+                  {habitDaysThisMonth(data, h.id, today)} {habitDaysThisMonth(data, h.id, today) === 1 ? 'day' : 'days'} this month
+                </span>
               </li>
             ))}
           </ul>

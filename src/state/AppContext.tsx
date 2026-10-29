@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { STORAGE_KEY } from '../config/app'
 import { toDateKey } from '../lib/dates'
-import { applyXp, getLevelInfo, type LevelInfo } from '../lib/xp'
-import { unlocksAtLevel } from '../data/unlocks'
+import { applyXp, getLevelInfo, totalXpForLevel, type LevelInfo } from '../lib/xp'
+import { createSampleData } from '../lib/sample'
+import { unlocksAtLevel, type PaletteId } from '../data/unlocks'
 import type { Mood } from '../data/content'
 import type { PresetId } from '../lib/breathing'
 import * as A from './actions'
@@ -32,13 +33,23 @@ export interface AppApi {
   resetAll: () => void
   /** Replace everything with the data from a backup (already checked by parseBackup). */
   restoreAll: (data: AppData) => void
+  /** Fill the app with made-up history so every screen has something to show. */
+  loadSample: () => void
+  /** While exploring sample data only: jump to a level to see what it unlocks. */
+  setSampleLevel: (level: number) => void
+  /** Try a theme before it is unlocked. Only changes how the app looks, never the data. */
+  previewPalette: PaletteId | null
+  setPreviewPalette: (palette: PaletteId | null) => void
 }
+
+export const MAX_SAMPLE_LEVEL = 20
 
 const AppContext = createContext<AppApi | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(() => loadAppData())
   const ref = useRef(data)
+  const [previewPalette, setPreviewPalette] = useState<PaletteId | null>(null)
   const fx = useFx()
   const today = useToday()
 
@@ -103,8 +114,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         set(createInitialData())
       },
       restoreAll: (restored) => set(restored),
+      loadSample: () => set(createSampleData()),
+      setSampleLevel: (lvl) => {
+        if (!ref.current.sample) return
+        const level = Math.max(1, Math.min(MAX_SAMPLE_LEVEL, Math.round(lvl)))
+        set({ ...ref.current, xp: totalXpForLevel(level) })
+      },
+      previewPalette,
+      setPreviewPalette,
     }),
-    [data, today, commit, set],
+    [data, today, commit, set, previewPalette],
   )
 
   return <AppContext.Provider value={api}>{children}</AppContext.Provider>
