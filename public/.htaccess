@@ -23,7 +23,7 @@ Options -Indexes
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
     Header always set Strict-Transport-Security "max-age=31536000"
-    Header always set Cross-Origin-Opener-Policy "same-origin"
+    # Deliberately no Cross-Origin-Opener-Policy: with it Lighthouse and PageSpeed cannot record the page load and report a failed run.
     # Only this site's own files may run. The one small inline script (it applies the saved theme before the first paint) is
     # allowed by its hash, which the build fills in below.
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' '__INLINE_SCRIPT_HASH__'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"

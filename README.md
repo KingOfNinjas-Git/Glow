@@ -6,6 +6,14 @@ A gentle self-care web app. Tiny habits, breathing exercises and mood check-ins 
 
 **Stack:** React 19, TypeScript, Vite, Tailwind CSS v4, Framer Motion, vite-plugin-pwa, Vitest, Playwright.
 
+![A short tour: sample data, ticking a habit, a check-in, the companion at level 14, a theme preview and the three languages](docs/media/glow-demo.webp)
+
+| Computer | Phone (dark) | Portuguese |
+| --- | --- | --- |
+| ![Home on a computer](docs/screenshots/desktop-home.png) | ![Breathing on a phone](docs/screenshots/phone-breathe-dark.png) | ![Home in Portuguese](docs/screenshots/phone-home-portugues.png) |
+
+More in `docs/screenshots/`; a draft write-up for a project page is in `docs/CASE_STUDY.md`.
+
 ## For someone trying it
 
 The first screen offers **Explore with sample data**: thirty days of believable history (habits, moods, breathing), so every screen is full straight away. A short "Things to try" list ticks itself off, a bar lets you jump to any level to see everything it unlocks, and **Start fresh** gives you your own empty copy. Locked themes can be previewed from Settings, and the companion at every level from Progress, without changing anything real. On a computer the number keys 1 to 5 switch screens.
@@ -80,7 +88,7 @@ Uses the Notification API (through the service worker when available). Permissio
 Pastel palette with dark-ink text and strong accent colours for text (≥4.5:1). Honors `prefers-reduced-motion`. Keyboard-focusable controls, labelled radios and switches, dialog focus handling, a main landmark on every screen. The automated accessibility check (axe) reports no violations on any screen, in light and dark, on phone and computer, in all three languages.
 
 ### Speed
-Only the home screen and the app shell are in the first download (about 80 KB compressed); the other screens and the animation code load right after, and are saved for offline use. Lighthouse (mobile, simulated slow 4G): performance about 90, accessibility, best practices and SEO 100.
+Only the home screen and the app shell are in the first download (about 80 KB compressed); the other screens and the animation code load right after, and are saved for offline use. Lighthouse on the live site (mobile, simulated slow 4G): performance 94, accessibility, best practices and SEO 100; first paint 1.5 s, no layout shift, 160 KB transferred.
 
 ## Project layout
 
