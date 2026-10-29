@@ -1,6 +1,7 @@
 import type { Mood } from '../data/content'
 import type { PaletteId } from '../data/unlocks'
 import type { DateKey } from '../lib/dates'
+import type { LanguagePref } from '../i18n'
 import type { PresetId } from '../lib/breathing'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
@@ -45,6 +46,8 @@ export interface Settings {
   haptics: boolean
   /** when the last backup was downloaded, to nudge for a new one */
   lastBackupAt?: string
+  /** the language of the text; "auto" (or nothing) follows the browser */
+  language?: LanguagePref
 }
 
 export interface AppData {

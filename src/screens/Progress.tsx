@@ -3,6 +3,8 @@ import { Companion } from '../components/Companion'
 import { XpBar } from '../components/XpBar'
 import { Card, SectionTitle } from '../components/ui/Card'
 import { ACCESSORIES, PALETTES, STAGES, stageForLevel } from '../data/unlocks'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 import { formatMonthName, monthDays } from '../lib/dates'
 import {
   activeDaysThisMonth,
@@ -30,19 +32,19 @@ function Stat({ value, label, emoji }: { value: string | number; label: string; 
 
 export function Progress() {
   const { data, today, level } = useApp()
+  const { t, tn, locale } = useI18n()
   const days = activeDaysThisMonth(data, today)
   const showedUp = showedUpDays(data, today)
-  const month = formatMonthName(today)
+  const month = formatMonthName(today, locale)
   const [previewLevel, setPreviewLevel] = useState(Math.min(level.level, MAX_PREVIEW_LEVEL))
-  const wearing = ACCESSORIES.filter((a) => previewLevel >= a.unlockLevel).map((a) => a.name.toLowerCase())
+  const wearing = ACCESSORIES.filter((a) => previewLevel >= a.unlockLevel).map((a) => t(`accessory.${a.id}` as MessageKey).toLowerCase())
+  const stageName = (lvl: number) => t(`stage.${stageForLevel(lvl).stage}` as MessageKey)
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
-        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Progress</h1>
-        <p className="mt-1 text-ink-soft">
-          {days > 0 ? `${days} ${days === 1 ? 'day' : 'days'} this month. Look at you showing up.` : `${month} is wide open. No rush.`}
-        </p>
+        <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{t('progress.title')}</h1>
+        <p className="mt-1 text-ink-soft">{days > 0 ? tn('progress.sub', days) : t('progress.sub.open', { month })}</p>
       </header>
 
       <Card className="grid items-center gap-4 bg-gradient-to-b from-accent-soft to-surface sm:grid-cols-[auto_1fr]">
@@ -50,13 +52,13 @@ export function Progress() {
           <Companion level={level.level} name={data.companion.name} size={160} />
         </div>
         <div className="space-y-3">
-          <p className="text-lg font-extrabold">{data.xp} XP earned in total</p>
+          <p className="text-lg font-extrabold">{t('progress.xpTotal', { xp: data.xp })}</p>
           <XpBar info={level} />
         </div>
       </Card>
 
       <Card>
-        <SectionTitle hint="preview only">Meet your companion at any level</SectionTitle>
+        <SectionTitle hint={t('progress.preview.hint')}>{t('progress.preview.title')}</SectionTitle>
         <div className="grid items-center gap-4 sm:grid-cols-[auto_1fr]">
           <div className="mx-auto">
             <Companion level={previewLevel} name={data.companion.name} size={140} />
@@ -64,7 +66,7 @@ export function Progress() {
           <div className="space-y-3">
             <label className="block">
               <span className="mb-1 block font-bold" id="preview-level-label">
-                Level {previewLevel} · {stageForLevel(previewLevel).name}
+                {t('progress.preview.level', { n: previewLevel, stage: stageName(previewLevel) })}
               </span>
               <input
                 type="range"
@@ -73,27 +75,28 @@ export function Progress() {
                 value={previewLevel}
                 onChange={(e) => setPreviewLevel(Number(e.target.value))}
                 aria-labelledby="preview-level-label"
-                aria-valuetext={`Level ${previewLevel}, ${stageForLevel(previewLevel).name}`}
+                aria-valuetext={t('progress.preview.aria', { n: previewLevel, stage: stageName(previewLevel) })}
                 className="w-full accent-[var(--accent-strong)]"
               />
             </label>
             <p className="text-sm text-ink-soft">
-              {wearing.length ? `Wearing: ${wearing.join(', ')}.` : 'No accessories yet.'} This is only a preview: your real level stays {level.level}.
+              {wearing.length ? t('progress.preview.wearing', { list: wearing.join(', ') }) : t('progress.preview.none')}{' '}
+              {t('progress.preview.note', { n: level.level })}
             </p>
           </div>
         </div>
       </Card>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat emoji="🌿" value={totalHabitCompletions(data)} label="tiny wins, ever" />
-        <Stat emoji="🌬️" value={`${breathingMinutes(data)} min`} label={`breathing (${breathsThisMonth(data, today)} this month)`} />
-        <Stat emoji="💭" value={checkInsThisMonth(data, today)} label="check-ins this month" />
-        <Stat emoji="📅" value={days} label="days showed up" />
+        <Stat emoji="🌿" value={totalHabitCompletions(data)} label={t('stat.wins')} />
+        <Stat emoji="🌬️" value={t('stat.min', { n: breathingMinutes(data) })} label={t('stat.breath', { n: breathsThisMonth(data, today) })} />
+        <Stat emoji="💭" value={checkInsThisMonth(data, today)} label={t('stat.checkins')} />
+        <Stat emoji="📅" value={days} label={t('stat.days')} />
       </div>
 
       <Card>
-        <SectionTitle hint={month}>Days you showed up</SectionTitle>
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-2" role="list" aria-label={`Days you showed up in ${month}`}>
+        <SectionTitle hint={month}>{t('progress.calendar')}</SectionTitle>
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2" role="list" aria-label={t('progress.calendar.aria', { month })}>
           {monthDays(today).map((d) => {
             const on = showedUp.has(d)
             const isToday = d === today
@@ -101,7 +104,7 @@ export function Progress() {
               <div
                 key={d}
                 role="listitem"
-                aria-label={`${d}${on ? ': showed up' : ''}`}
+                aria-label={on ? t('progress.day.on', { date: d }) : d}
                 className={`flex aspect-square items-center justify-center rounded-2xl text-sm font-bold ${
                   on ? 'bg-accent-grad text-on-accent' : 'bg-surface2 text-ink-soft'
                 } ${isToday ? 'ring-2 ring-accent-strong ring-offset-2 ring-offset-surface' : ''}`}
@@ -111,21 +114,19 @@ export function Progress() {
             )
           })}
         </div>
-        <p className="mt-3 text-sm text-ink-soft">Quiet days are just quiet days. Nothing is broken.</p>
+        <p className="mt-3 text-sm text-ink-soft">{t('progress.calendar.note')}</p>
       </Card>
 
       {data.habits.length > 0 && (
         <Card>
-          <SectionTitle>By habit</SectionTitle>
+          <SectionTitle>{t('progress.byHabit')}</SectionTitle>
           <ul className="space-y-2">
             {data.habits.map((h) => (
               <li key={h.id} className="flex items-center justify-between rounded-2xl bg-surface2 px-4 py-3">
                 <span className="font-semibold">
                   <span aria-hidden="true">{h.emoji}</span> {h.name}
                 </span>
-                <span className="text-sm font-bold text-accent-strong">
-                  {habitDaysThisMonth(data, h.id, today)} {habitDaysThisMonth(data, h.id, today) === 1 ? 'day' : 'days'} this month
-                </span>
+                <span className="text-sm font-bold text-accent-strong">{tn('habit.row.days', habitDaysThisMonth(data, h.id, today))}</span>
               </li>
             ))}
           </ul>
@@ -133,12 +134,22 @@ export function Progress() {
       )}
 
       <Card>
-        <SectionTitle>Unlocks</SectionTitle>
+        <SectionTitle>{t('progress.unlocks')}</SectionTitle>
         <ul className="grid gap-2 sm:grid-cols-2">
           {[
-            ...STAGES.filter((s) => s.stage > 1).map((s) => ({ key: `s${s.stage}`, icon: '🌱', label: `Companion: ${s.name}`, lvl: s.unlockLevel })),
-            ...ACCESSORIES.map((a) => ({ key: a.id, icon: '🎀', label: a.name, lvl: a.unlockLevel })),
-            ...PALETTES.filter((p) => p.unlockLevel > 1).map((p) => ({ key: p.id, icon: '🎨', label: `${p.name} theme`, lvl: p.unlockLevel })),
+            ...STAGES.filter((s) => s.stage > 1).map((s) => ({
+              key: `s${s.stage}`,
+              icon: '🌱',
+              label: t('progress.companion', { name: t(`stage.${s.stage}` as MessageKey) }),
+              lvl: s.unlockLevel,
+            })),
+            ...ACCESSORIES.map((a) => ({ key: a.id, icon: '🎀', label: t(`accessory.${a.id}` as MessageKey), lvl: a.unlockLevel })),
+            ...PALETTES.filter((p) => p.unlockLevel > 1).map((p) => ({
+              key: p.id,
+              icon: '🎨',
+              label: t('unlock.theme', { name: t(`palette.${p.id}` as MessageKey) }),
+              lvl: p.unlockLevel,
+            })),
           ]
             .sort((a, b) => a.lvl - b.lvl)
             .map((u) => {
@@ -148,7 +159,7 @@ export function Progress() {
                   <span className="font-semibold">
                     <span aria-hidden="true">{got ? u.icon : '🔒'}</span> {u.label}
                   </span>
-                  <span className="text-sm font-bold">{got ? 'Unlocked' : `Level ${u.lvl}`}</span>
+                  <span className="text-sm font-bold">{got ? t('progress.unlocked') : t('progress.levelN', { n: u.lvl })}</span>
                 </li>
               )
             })}

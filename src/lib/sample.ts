@@ -1,4 +1,6 @@
 import type { Mood } from '../data/content'
+import { en } from '../i18n/en'
+import type { MessageKey } from '../i18n/en'
 import { checkInClaimKey, habitClaimKey } from '../state/actions'
 import type { AppData, BreathSession, CheckIn, Habit } from '../state/types'
 import { PRESETS } from './breathing'
@@ -19,37 +21,31 @@ function seeded(seed: number): () => number {
   }
 }
 
-const SAMPLE_HABITS: { id: string; emoji: string; name: string; chance: number }[] = [
-  { id: 'sample-water', emoji: '💧', name: 'Drink water', chance: 0.85 },
-  { id: 'sample-outside', emoji: '🌤️', name: 'Step outside', chance: 0.6 },
-  { id: 'sample-stretch', emoji: '🧘', name: 'Stretch', chance: 0.55 },
-  { id: 'sample-friend', emoji: '💬', name: 'Text a friend', chance: 0.4 },
-  { id: 'sample-screens', emoji: '🌙', name: 'Wind down screens', chance: 0.5 },
+const SAMPLE_HABITS: { id: string; emoji: string; key: MessageKey; chance: number }[] = [
+  { id: 'sample-water', emoji: '💧', key: 'habit.water', chance: 0.85 },
+  { id: 'sample-outside', emoji: '🌤️', key: 'habit.outside', chance: 0.6 },
+  { id: 'sample-stretch', emoji: '🧘', key: 'habit.stretch', chance: 0.55 },
+  { id: 'sample-friend', emoji: '💬', key: 'habit.friend', chance: 0.4 },
+  { id: 'sample-screens', emoji: '🌙', key: 'habit.screens', chance: 0.5 },
 ]
 
-const SAMPLE_NOTES = [
-  'Slept okay, iced coffee was elite',
-  'Long walk after lunch, felt lighter',
-  'Rough morning, better evening',
-  'Finally tidied my desk',
-  'Called my sister, needed that',
-  'Rain all day, cozy playlist on',
-  'Said no to something. Proud of that',
-  'Tiny wins counted today',
-]
+const SAMPLE_NOTE_COUNT = 8
+
+/** Gives the words of the sample (habit names, little notes) in a language. English unless told otherwise. */
+export type SampleText = (key: MessageKey) => string
 
 /**
  * Thirty days of believable made-up history (habits, check-ins, breathing) with a few things done today,
  * so every screen has something to show. XP is exactly what the real rules would have granted, so
  * ticking, un-ticking and checking in behave like they do for anyone else.
  */
-export function createSampleData(now: Date = new Date()): AppData {
+export function createSampleData(now: Date = new Date(), text: SampleText = (key) => en[key]): AppData {
   const rng = seeded(2026)
   const today = toDateKey(now)
   const habits: Habit[] = SAMPLE_HABITS.map((h) => ({
     id: h.id,
     emoji: h.emoji,
-    name: h.name,
+    name: text(h.key),
     createdAt: addDays(today, -SAMPLE_DAYS) + 'T09:00:00.000Z',
   }))
 
@@ -80,7 +76,7 @@ export function createSampleData(now: Date = new Date()): AppData {
       checkIns[date] = {
         date,
         mood,
-        note: rng() < 0.4 ? SAMPLE_NOTES[Math.floor(rng() * SAMPLE_NOTES.length)] : '',
+        note: rng() < 0.4 ? text(`sample.note.${Math.floor(rng() * SAMPLE_NOTE_COUNT)}` as MessageKey) : '',
         at: `${date}T20:00:00.000Z`,
       }
       xpClaims[checkInClaimKey(date)] = true

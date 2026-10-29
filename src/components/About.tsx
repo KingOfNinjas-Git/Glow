@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { APP_NAME, AUTHOR } from '../config/app'
+import { useI18n } from '../i18n'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
 
@@ -10,40 +11,43 @@ export const useAbout = () => useContext(AboutContext)
 
 export function AboutProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
+  const { t, rich } = useI18n()
   const show = useCallback(() => setOpen(true), [])
   const value = useMemo(() => show, [show])
+
+  const link = 'font-bold text-accent-strong underline'
 
   return (
     <AboutContext.Provider value={value}>
       {children}
-      <Modal open={open} onClose={() => setOpen(false)} title={`About ${APP_NAME}`}>
+      <Modal open={open} onClose={() => setOpen(false)} title={t('about.title', { app: APP_NAME })}>
         <div className="space-y-3 text-ink-soft">
+          <p>{t('about.p1', { app: APP_NAME })}</p>
           <p>
-            {APP_NAME} is a gentle self-care app: tiny habits, breathing exercises and mood check-ins earn XP that grows a little plant friend.
-            No streaks to lose, no guilt, and no account.
+            <strong className="text-ink">{t('about.p2.lead')}</strong>
+            {t('about.p2.rest')}
           </p>
           <p>
-            <strong className="text-ink">Your data stays on your device.</strong> Nothing is uploaded. You can download a backup any time
-            from Settings and restore it somewhere else.
+            {rich('about.p3', {
+              author: (
+                <a className={link} href={AUTHOR.url} target="_blank" rel="noopener">
+                  {AUTHOR.name}
+                </a>
+              ),
+            })}
           </p>
           <p>
-            It is a portfolio project by{' '}
-            <a className="font-bold text-accent-strong underline" href={AUTHOR.url} target="_blank" rel="noopener">
-              {AUTHOR.name}
-            </a>
-            , a web developer who builds fast, accessible websites and apps. Built with React, TypeScript, Vite and Tailwind. It installs like an
-            app and keeps working offline.
-          </p>
-          <p>
-            Want something like this for your own idea?{' '}
-            <a className="font-bold text-accent-strong underline" href={`${AUTHOR.url}/#contact`} target="_blank" rel="noopener">
-              Get in touch
-            </a>
-            .
+            {rich('about.p4', {
+              contact: (
+                <a className={link} href={`${AUTHOR.url}/#contact`} target="_blank" rel="noopener">
+                  {t('about.contact')}
+                </a>
+              ),
+            })}
           </p>
         </div>
         <div className="mt-5 flex justify-end">
-          <Button onClick={() => setOpen(false)}>Close</Button>
+          <Button onClick={() => setOpen(false)}>{t('common.close')}</Button>
         </div>
       </Modal>
     </AboutContext.Provider>

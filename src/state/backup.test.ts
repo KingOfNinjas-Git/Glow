@@ -38,7 +38,7 @@ describe('restoring a backup', () => {
   ])('refuses %s with a friendly message and no data', (_label, text) => {
     const result = parseBackup(text)
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.length).toBeGreaterThan(5)
+    if (!result.ok) expect(['toobig', 'unreadable', 'notbackup', 'wrongshape']).toContain(result.error)
   })
 
   it('refuses a file that is far too big', () => {

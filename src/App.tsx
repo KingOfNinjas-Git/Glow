@@ -9,6 +9,7 @@ import { usePersistentStorage } from './hooks/usePersistentStorage'
 import { useReminderScheduler } from './hooks/useReminderScheduler'
 import { useShortcuts } from './hooks/useShortcuts'
 import { useTheme } from './hooks/useTheme'
+import { I18nProvider } from './i18n'
 import { Home } from './screens/Home'
 import { Onboarding } from './screens/Onboarding'
 import { useApp } from './state/AppContext'
@@ -70,10 +71,12 @@ export default function App() {
   return (
     <LazyMotion features={loadMotionFeatures} strict>
       <MotionConfig reducedMotion="user">
-        <AboutProvider>
-          <Shell />
-        </AboutProvider>
-        <FxLayers />
+        <I18nProvider>
+          <AboutProvider>
+            <Shell />
+          </AboutProvider>
+          <FxLayers />
+        </I18nProvider>
       </MotionConfig>
     </LazyMotion>
   )

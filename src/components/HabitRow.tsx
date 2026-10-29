@@ -1,5 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion'
 import { useRef } from 'react'
+import { useI18n } from '../i18n'
 import type { Habit } from '../state/types'
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props) {
   const check = useRef<HTMLButtonElement>(null)
+  const { t, tn } = useI18n()
   return (
     <m.li
       layout
@@ -27,7 +29,7 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
         type="button"
         role="checkbox"
         aria-checked={done}
-        aria-label={`${habit.name}, ${done ? 'done today' : 'not done yet'}`}
+        aria-label={t(done ? 'habit.row.done' : 'habit.row.todo', { name: habit.name })}
         onClick={() => onToggle(check.current)}
         whileTap={{ scale: 0.85 }}
         className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-2xl ${
@@ -57,13 +59,13 @@ export function HabitRow({ habit, done, daysThisMonth, onToggle, onEdit }: Props
       <div className="min-w-0 flex-1">
         <p className={`truncate text-base font-bold ${done ? 'text-accent-strong' : ''}`}>{habit.name}</p>
         <p className="text-xs text-ink-soft">
-          {daysThisMonth === 0 ? 'Fresh start this month' : `${daysThisMonth} ${daysThisMonth === 1 ? 'day' : 'days'} this month`}
+          {daysThisMonth === 0 ? t('habit.row.fresh') : tn('habit.row.days', daysThisMonth)}
         </p>
       </div>
       <button
         type="button"
         onClick={onEdit}
-        aria-label={`Edit ${habit.name}`}
+        aria-label={t('habit.row.edit', { name: habit.name })}
         className="flex h-10 w-10 items-center justify-center rounded-full text-xl text-ink-soft hover:bg-surface2"
       >
         ⋯

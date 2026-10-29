@@ -1,5 +1,7 @@
 import { m, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 import { advanceElapsed, phaseAt, type BreathPreset, type PhaseState } from '../lib/breathing'
 
 interface Props {
@@ -14,6 +16,7 @@ const smooth = (t: number) => t * t * (3 - 2 * t)
 
 /** Animated breathing circle. Drives itself from a clock so it never drifts from the phase text. */
 export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }: Props) {
+  const { t } = useI18n()
   const reduce = !!useReducedMotion()
   const scale = useMotionValue(0.5)
   const ringOffset = useMotionValue(0)
@@ -88,7 +91,7 @@ export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }
         >
           <div className="text-center text-on-accent">
             <p className="text-3xl font-black" aria-hidden="true">
-              {phase.label}
+              {t(`breathe.phase.${phase.kind}` as MessageKey)}
             </p>
             <p className="text-lg font-bold opacity-80" aria-hidden="true">
               {phase.secondsLeft}
@@ -97,10 +100,10 @@ export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }
         </m.div>
       </div>
       <p className="sr-only" role="status" aria-live="polite">
-        {phase.label}
+        {t(`breathe.phase.${phase.kind}` as MessageKey)}
       </p>
-      <p className="text-ink-soft" aria-label={`${mins} minutes ${secs} seconds left`}>
-        {mins}:{secs} left
+      <p className="text-ink-soft" aria-label={t('breathe.left.aria', { m: mins, s: secs })}>
+        {t('breathe.left', { m: mins, s: secs })}
       </p>
     </div>
   )

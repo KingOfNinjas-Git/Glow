@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 import { useApp } from '../state/AppContext'
 import { Card } from './ui/Card'
 
@@ -18,15 +20,16 @@ const wasHidden = () => {
  */
 export function TryList() {
   const { data, today } = useApp()
+  const { t } = useI18n()
   const [hidden, setHidden] = useState(wasHidden)
   if (!data.sample || hidden) return null
 
   const baseline = 2 // the sample starts with two habits already ticked today
-  const items: { label: string; where: string; done: boolean }[] = [
-    { label: 'Tick off a tiny habit', where: 'below', done: (data.completions[today]?.length ?? 0) > baseline },
-    { label: 'Take a one-minute breath', where: 'Breathe', done: data.breaths.some((b) => b.date === today) },
-    { label: 'Check in with your mood', where: 'Check-in', done: !!data.checkIns[today] },
-    { label: 'Try a theme', where: 'Settings', done: data.settings.palette !== 'peach' },
+  const items: { label: MessageKey; where: MessageKey; done: boolean }[] = [
+    { label: 'try.habit', where: 'try.below', done: (data.completions[today]?.length ?? 0) > baseline },
+    { label: 'try.breath', where: 'nav.breathe', done: data.breaths.some((b) => b.date === today) },
+    { label: 'try.checkin', where: 'nav.checkin', done: !!data.checkIns[today] },
+    { label: 'try.theme', where: 'nav.settings', done: data.settings.palette !== 'peach' },
   ]
   const count = items.filter((i) => i.done).length
 
@@ -43,10 +46,10 @@ export function TryList() {
     <Card role="region" className="!p-4 sm:!p-5" aria-labelledby="try-title">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h2 id="try-title" className="text-lg font-extrabold tracking-tight">
-          Things to try <span className="text-sm font-bold text-ink-soft">({count} of {items.length})</span>
+          {t('try.title')} <span className="text-sm font-bold text-ink-soft">{t('try.count', { count, total: items.length })}</span>
         </h2>
         <button type="button" onClick={hide} className="text-sm font-bold text-accent-strong underline">
-          Hide
+          {t('try.hide')}
         </button>
       </div>
       <ul className="grid gap-1.5 sm:grid-cols-2">
@@ -54,14 +57,14 @@ export function TryList() {
           <li key={i.label} className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-sm ${i.done ? 'bg-accent-soft text-accent-strong' : 'bg-surface2 text-ink'}`}>
             <span aria-hidden="true">{i.done ? '✅' : '⬜'}</span>
             <span className="font-semibold">
-              {i.label}
-              <span className="sr-only">{i.done ? ' (done)' : ''}</span>
+              {t(i.label)}
+              <span className="sr-only">{i.done ? t('try.doneSr') : ''}</span>
             </span>
-            {!i.done && <span className="ml-auto text-xs text-ink-soft">{i.where}</span>}
+            {!i.done && <span className="ml-auto text-xs text-ink-soft">{t(i.where)}</span>}
           </li>
         ))}
       </ul>
-      {count === items.length && <p className="mt-2 text-sm font-bold text-accent-strong">That’s the tour. Peek at Progress to meet your companion at any level ✨</p>}
+      {count === items.length && <p className="mt-2 text-sm font-bold text-accent-strong">{t('try.complete')}</p>}
     </Card>
   )
 }

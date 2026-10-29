@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createInitialData, type AppData } from '../state/types'
-import { BACKUP_NUDGE_AFTER_DAYS, BACKUP_NUDGE_MIN_XP, describeLastBackup, needsBackupNudge } from './backup'
+import { BACKUP_NUDGE_AFTER_DAYS, BACKUP_NUDGE_MIN_XP, lastBackupAge, needsBackupNudge } from './backup'
 
 const now = new Date('2026-10-29T12:00:00Z')
 const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString()
@@ -35,14 +35,14 @@ describe('when to suggest a backup', () => {
   })
 })
 
-describe('describing the last backup', () => {
+describe('how long ago the last backup was', () => {
   it.each([
-    [undefined, 'never'],
-    [daysAgo(0), 'today'],
-    [daysAgo(1), 'yesterday'],
-    [daysAgo(5), '5 days ago'],
-    ['garbage', 'today'],
-  ])('%s -> %s', (when, text) => {
-    expect(describeLastBackup(when, now)).toBe(text)
+    [undefined, { kind: 'never' }],
+    [daysAgo(0), { kind: 'today' }],
+    [daysAgo(1), { kind: 'yesterday' }],
+    [daysAgo(5), { kind: 'days', n: 5 }],
+    ['garbage', { kind: 'today' }],
+  ])('%s -> %j', (when, expected) => {
+    expect(lastBackupAge(when, now)).toEqual(expected)
   })
 })

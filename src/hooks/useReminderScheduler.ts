@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { APP_NAME } from '../config/app'
-import { REMINDER_MESSAGES } from '../data/content'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 import { toDateKey } from '../lib/dates'
 import { dueReminders, notificationSupport, pickMessageIndex } from '../lib/reminders'
 import { useApp } from '../state/AppContext'
@@ -33,6 +34,9 @@ export async function showSystemNotification(title: string, body: string): Promi
 export function useReminderScheduler(): void {
   const app = useApp()
   const fx = useFx()
+  const { t } = useI18n()
+  const tRef = useRef(t)
+  tRef.current = t
   const appRef = useRef(app)
   appRef.current = app
   const fxRef = useRef(fx)
@@ -44,7 +48,7 @@ export function useReminderScheduler(): void {
       const due = dueReminders(a.data.settings.reminders, new Date(), toDateKey())
       if (!due.length) return
       const idx = pickMessageIndex(a.data.settings.lastReminderMessage)
-      const msg = REMINDER_MESSAGES[idx]
+      const msg = { title: tRef.current(`rem.${idx}.title` as MessageKey), body: tRef.current(`rem.${idx}.body` as MessageKey) }
       for (const r of due) a.markReminderFired(r.id)
       a.updateSettings({ lastReminderMessage: idx })
       const shown = await showSystemNotification(msg.title, msg.body)

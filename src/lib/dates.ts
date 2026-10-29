@@ -33,11 +33,11 @@ export const monthDays = (key: DateKey): DateKey[] => {
   return Array.from({ length: daysInMonthOf(key) }, (_, i) => `${prefix}-${pad(i + 1)}`)
 }
 
-export const formatWeekday = (key: DateKey, style: 'short' | 'narrow' = 'short'): string =>
-  fromDateKey(key).toLocaleDateString(undefined, { weekday: style })
+export const formatWeekday = (key: DateKey, style: 'short' | 'narrow' = 'short', locale?: string): string =>
+  fromDateKey(key).toLocaleDateString(locale, { weekday: style })
 
-export const formatDayLong = (key: DateKey): string =>
-  fromDateKey(key).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+export const formatDayLong = (key: DateKey, locale?: string): string =>
+  fromDateKey(key).toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' })
 
-export const formatMonthName = (key: DateKey): string =>
-  fromDateKey(key).toLocaleDateString(undefined, { month: 'long' })
+export const formatMonthName = (key: DateKey, locale?: string): string =>
+  fromDateKey(key).toLocaleDateString(locale, { month: 'long' })

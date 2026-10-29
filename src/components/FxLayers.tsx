@@ -1,5 +1,7 @@
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useEffect, useMemo } from 'react'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 import { useFx } from '../state/FxContext'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
@@ -26,6 +28,13 @@ function FloatingXp() {
       </AnimatePresence>
     </div>
   )
+}
+
+/** What a level-up unlocked, in words, in the chosen language. */
+function unlockLabel(u: { kind: 'theme' | 'growth' | 'accessory'; id: string | number }, t: (key: MessageKey, vars?: Record<string, string | number>) => string): string {
+  if (u.kind === 'theme') return t('unlock.theme', { name: t(`palette.${u.id}` as MessageKey) })
+  if (u.kind === 'growth') return t('unlock.growth', { name: t(`stage.${u.id}` as MessageKey) })
+  return t(`accessory.${u.id}` as MessageKey)
 }
 
 const CONFETTI = ['#ffb89c', '#cdbcff', '#a9e8d0', '#a8d9ff', '#ffb5d0', '#ffe08a']
@@ -62,9 +71,10 @@ function Confetti() {
 
 function LevelUp() {
   const { levelUp, dismissLevelUp } = useFx()
+  const { t } = useI18n()
   const reduce = !!useReducedMotion()
   return (
-    <Modal open={!!levelUp} onClose={dismissLevelUp} title="You leveled up!">
+    <Modal open={!!levelUp} onClose={dismissLevelUp} title={t('fx.levelup.title')}>
       {levelUp && (
         <div className="relative text-center">
           {!reduce && <Confetti />}
@@ -76,20 +86,20 @@ function LevelUp() {
           >
             {levelUp.level}
           </m.div>
-          <p className="text-lg font-bold">Level {levelUp.level}, look at you glow ✨</p>
-          <p className="mt-1 text-ink-soft">Showing up is the whole game, and you keep doing it.</p>
+          <p className="text-lg font-bold">{t('fx.levelup.line', { n: levelUp.level })}</p>
+          <p className="mt-1 text-ink-soft">{t('fx.levelup.sub')}</p>
           {levelUp.unlocks.length > 0 && (
             <ul className="mt-4 space-y-2 text-left">
               {levelUp.unlocks.map((u) => (
-                <li key={u.label} className="flex items-center gap-3 rounded-2xl bg-accent-soft px-4 py-2.5 font-semibold text-accent-strong">
+                <li key={`${u.kind}-${u.id}`} className="flex items-center gap-3 rounded-2xl bg-accent-soft px-4 py-2.5 font-semibold text-accent-strong">
                   <span aria-hidden="true">{u.kind === 'theme' ? '🎨' : u.kind === 'growth' ? '🌱' : '🎀'}</span>
-                  New: {u.label}
+                  {t('fx.new', { label: unlockLabel(u, t) })}
                 </li>
               ))}
             </ul>
           )}
           <Button className="mt-6 w-full" onClick={dismissLevelUp}>
-            Thanks, little plant!
+            {t('fx.thanks')}
           </Button>
         </div>
       )}
@@ -99,21 +109,22 @@ function LevelUp() {
 
 function Toasts() {
   const { toasts, dismissToast } = useFx()
+  const { t } = useI18n()
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex flex-col items-center gap-2 p-3 safe-top" aria-live="polite">
       <AnimatePresence>
-        {toasts.map((t) => (
-          <ToastCard key={t.id} id={t.id} title={t.title} body={t.body} onDone={dismissToast} />
+        {toasts.map((toast) => (
+          <ToastCard key={toast.id} id={toast.id} title={toast.title} body={toast.body} onDone={dismissToast} dismissLabel={t('fx.dismiss')} />
         ))}
       </AnimatePresence>
     </div>
   )
 }
 
-function ToastCard({ id, title, body, onDone }: { id: number; title: string; body: string; onDone: (id: number) => void }) {
+function ToastCard({ id, title, body, onDone, dismissLabel }: { id: number; title: string; body: string; onDone: (id: number) => void; dismissLabel: string }) {
   useEffect(() => {
-    const t = window.setTimeout(() => onDone(id), 9000)
-    return () => window.clearTimeout(t)
+    const timer = window.setTimeout(() => onDone(id), 9000)
+    return () => window.clearTimeout(timer)
   }, [id, onDone])
   return (
     <m.div
@@ -127,7 +138,7 @@ function ToastCard({ id, title, body, onDone }: { id: number; title: string; bod
         <p className="font-extrabold">{title}</p>
         <p className="text-sm text-ink-soft">{body}</p>
       </div>
-      <button className="rounded-full px-2 py-1 text-sm font-bold text-ink-soft" onClick={() => onDone(id)} aria-label="Dismiss reminder">
+      <button className="rounded-full px-2 py-1 text-sm font-bold text-ink-soft" onClick={() => onDone(id)} aria-label={dismissLabel}>
         ✕
       </button>
     </m.div>

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { STORAGE_KEY } from '../config/app'
 import { toDateKey } from '../lib/dates'
 import { applyXp, getLevelInfo, totalXpForLevel, type LevelInfo } from '../lib/xp'
-import { createSampleData } from '../lib/sample'
+import { createSampleData, type SampleText } from '../lib/sample'
 import { unlocksAtLevel, type PaletteId } from '../data/unlocks'
 import type { Mood } from '../data/content'
 import type { PresetId } from '../lib/breathing'
@@ -33,8 +33,8 @@ export interface AppApi {
   resetAll: () => void
   /** Replace everything with the data from a backup (already checked by parseBackup). */
   restoreAll: (data: AppData) => void
-  /** Fill the app with made-up history so every screen has something to show. */
-  loadSample: () => void
+  /** Fill the app with made-up history so every screen has something to show (in the given language). */
+  loadSample: (text?: SampleText) => void
   /** While exploring sample data only: jump to a level to see what it unlocks. */
   setSampleLevel: (level: number) => void
   /** Try a theme before it is unlocked. Only changes how the app looks, never the data. */
@@ -111,10 +111,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       markReminderFired: (id) => set(A.updateReminder(ref.current, id, { lastFired: toDateKey() })),
       resetAll: () => {
         clearAppData()
-        set(createInitialData())
+        const fresh = createInitialData()
+        set({ ...fresh, settings: { ...fresh.settings, language: ref.current.settings.language } })
       },
       restoreAll: (restored) => set(restored),
-      loadSample: () => set(createSampleData()),
+      // the person's language choice is kept when the data is replaced
+      loadSample: (text) => {
+        const sample = createSampleData(new Date(), text)
+        set({ ...sample, settings: { ...sample.settings, language: ref.current.settings.language } })
+      },
       setSampleLevel: (lvl) => {
         if (!ref.current.sample) return
         const level = Math.max(1, Math.min(MAX_SAMPLE_LEVEL, Math.round(lvl)))

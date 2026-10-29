@@ -1,9 +1,9 @@
-import { REMINDER_MESSAGES } from '../data/content'
+import { REMINDER_COUNT } from '../data/content'
 import type { DateKey } from './dates'
 import type { Reminder } from '../state/types'
 
 /** Pick a message index, never repeating the previous one. `rng` is injectable for tests. */
-export function pickMessageIndex(last: number | undefined, rng: () => number = Math.random, size = REMINDER_MESSAGES.length): number {
+export function pickMessageIndex(last: number | undefined, rng: () => number = Math.random, size = REMINDER_COUNT): number {
   if (size <= 1) return 0
   let i = Math.floor(rng() * size) % size
   if (i === last) i = (i + 1) % size

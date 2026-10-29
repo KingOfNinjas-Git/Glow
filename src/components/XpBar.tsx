@@ -1,18 +1,20 @@
 import { m } from 'framer-motion'
+import { useI18n } from '../i18n'
 import type { LevelInfo } from '../lib/xp'
 
 export function XpBar({ info }: { info: LevelInfo }) {
+  const { t } = useI18n()
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between text-sm font-bold">
-        <span className="rounded-full bg-accent-soft px-3 py-1 text-accent-strong">Level {info.level}</span>
+        <span className="rounded-full bg-accent-soft px-3 py-1 text-accent-strong">{t('xp.level', { n: info.level })}</span>
         <span className="text-ink-soft">
           {info.xpIntoLevel} / {info.xpForLevel} XP
         </span>
       </div>
       <div
         role="progressbar"
-        aria-label={`Level ${info.level} progress`}
+        aria-label={t('xp.progress', { n: info.level })}
         aria-valuemin={0}
         aria-valuemax={info.xpForLevel}
         aria-valuenow={info.xpIntoLevel}
@@ -25,7 +27,7 @@ export function XpBar({ info }: { info: LevelInfo }) {
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
         />
       </div>
-      <p className="mt-1.5 text-xs text-ink-soft">{info.xpToGo} XP to level {info.level + 1}</p>
+      <p className="mt-1.5 text-xs text-ink-soft">{t('xp.toGo', { xp: info.xpToGo, next: info.level + 1 })}</p>
     </div>
   )
 }

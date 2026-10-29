@@ -1,22 +1,24 @@
 import { useState } from 'react'
-import { REMINDER_MESSAGES } from '../data/content'
-import { notificationSupport, pickMessageIndex, type NotificationSupport } from '../lib/reminders'
 import { showSystemNotification } from '../hooks/useReminderScheduler'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
+import { notificationSupport, pickMessageIndex, type NotificationSupport } from '../lib/reminders'
 import { useApp } from '../state/AppContext'
 import { useFx } from '../state/FxContext'
 import { Button } from './ui/Button'
 import { Switch } from './ui/Controls'
 
-const STATUS_COPY: Record<NotificationSupport, string> = {
-  unsupported: 'This browser can’t show notifications, so reminders appear inside the app while it’s open.',
-  default: 'Allow notifications so reminders can reach you.',
-  granted: 'Notifications are on. Reminders arrive while the app is open or running in the background. If your phone has fully closed the app, they can be late or missing.',
-  denied: 'Notifications are blocked in your browser settings. No worries: reminders will show up inside the app instead.',
+const STATUS_KEY: Record<NotificationSupport, MessageKey> = {
+  unsupported: 'rem.unsupported',
+  default: 'rem.default',
+  granted: 'rem.granted',
+  denied: 'rem.denied',
 }
 
 export function ReminderSettings() {
   const app = useApp()
   const fx = useFx()
+  const { t } = useI18n()
   const [support, setSupport] = useState<NotificationSupport>(notificationSupport)
   const [time, setTime] = useState('09:00')
   const reminders = [...app.data.settings.reminders].sort((a, b) => a.time.localeCompare(b.time))
@@ -30,19 +32,21 @@ export function ReminderSettings() {
   }
 
   const test = async () => {
-    const msg = REMINDER_MESSAGES[pickMessageIndex(app.data.settings.lastReminderMessage)]
-    if (!(await showSystemNotification(msg.title, msg.body))) fx.toast(msg.title, msg.body)
+    const idx = pickMessageIndex(app.data.settings.lastReminderMessage)
+    const title = t(`rem.${idx}.title` as MessageKey)
+    const body = t(`rem.${idx}.body` as MessageKey)
+    if (!(await showSystemNotification(title, body))) fx.toast(title, body)
   }
 
   return (
     <div className="space-y-4">
       <p className="rounded-2xl bg-surface2 p-3 text-sm text-ink-soft" role="status">
-        {STATUS_COPY[support]}
+        {t(STATUS_KEY[support])}
       </p>
       <div className="flex flex-wrap gap-2">
-        {support === 'default' && <Button onClick={ask}>Allow notifications</Button>}
+        {support === 'default' && <Button onClick={ask}>{t('rem.allow')}</Button>}
         <Button variant="soft" onClick={test}>
-          Send a test nudge
+          {t('rem.test')}
         </Button>
       </div>
 
@@ -52,22 +56,22 @@ export function ReminderSettings() {
             <input
               type="time"
               value={r.time}
-              aria-label="Reminder time"
+              aria-label={t('rem.time.aria')}
               onChange={(e) => e.target.value && app.updateReminder(r.id, { time: e.target.value, lastFired: undefined })}
               className="flex-1 bg-transparent text-lg font-bold"
             />
-            <Switch checked={r.enabled} onChange={(v) => app.updateReminder(r.id, { enabled: v })} label={`Reminder at ${r.time}`} />
+            <Switch checked={r.enabled} onChange={(v) => app.updateReminder(r.id, { enabled: v })} label={t('rem.switch', { time: r.time })} />
             <button
               type="button"
               onClick={() => app.removeReminder(r.id)}
-              aria-label={`Remove reminder at ${r.time}`}
+              aria-label={t('rem.remove', { time: r.time })}
               className="rounded-full px-2 py-1 text-ink-soft hover:bg-line"
             >
               ✕
             </button>
           </li>
         ))}
-        {reminders.length === 0 && <li className="text-sm text-ink-soft">No reminders yet. Totally optional.</li>}
+        {reminders.length === 0 && <li className="text-sm text-ink-soft">{t('rem.none')}</li>}
       </ul>
 
       <div className="flex items-center gap-2">
@@ -75,11 +79,11 @@ export function ReminderSettings() {
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          aria-label="New reminder time"
+          aria-label={t('rem.new.aria')}
           className="h-12 rounded-2xl border border-line bg-surface2 px-3 text-lg font-bold"
         />
         <Button variant="soft" onClick={() => time && app.addReminder(time)}>
-          + Add time
+          {t('rem.add')}
         </Button>
       </div>
     </div>

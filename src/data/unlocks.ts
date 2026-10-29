@@ -54,14 +54,15 @@ export const isPaletteUnlocked = (id: PaletteId, level: number): boolean =>
 
 export interface Unlock {
   kind: 'theme' | 'growth' | 'accessory'
-  label: string
+  /** the palette id, the accessory id, or the growth stage number: the screen turns it into words */
+  id: string | number
 }
 
 /** What reaching `level` newly unlocks (for the celebration). */
 export function unlocksAtLevel(level: number): Unlock[] {
   const out: Unlock[] = []
-  for (const p of PALETTES) if (p.unlockLevel === level && level > 1) out.push({ kind: 'theme', label: `${p.name} theme` })
-  for (const s of STAGES) if (s.unlockLevel === level && level > 1) out.push({ kind: 'growth', label: `Your companion grew: ${s.name}` })
-  for (const a of ACCESSORIES) if (a.unlockLevel === level) out.push({ kind: 'accessory', label: a.name })
+  for (const p of PALETTES) if (p.unlockLevel === level && level > 1) out.push({ kind: 'theme', id: p.id })
+  for (const s of STAGES) if (s.unlockLevel === level && level > 1) out.push({ kind: 'growth', id: s.stage })
+  for (const a of ACCESSORIES) if (a.unlockLevel === level) out.push({ kind: 'accessory', id: a.id })
   return out
 }

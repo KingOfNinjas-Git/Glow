@@ -1,7 +1,9 @@
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { useState } from 'react'
-import { COMPANION_LINES } from '../data/content'
+import { COMPANION_LINE_COUNT } from '../data/content'
 import { accessoriesForLevel, stageForLevel, type AccessoryId } from '../data/unlocks'
+import { useI18n } from '../i18n'
+import type { MessageKey } from '../i18n/en'
 
 const STEM_HEIGHT = [0, 16, 34, 52, 62, 70]
 const LEAF_PAIRS = [0, 1, 2, 3, 3, 3]
@@ -111,6 +113,7 @@ function Accessories({ items, topY, reduce }: { items: AccessoryId[]; topY: numb
 export function Companion({ level, name, size = 220 }: { level: number; name: string; size?: number }) {
   const reduce = !!useReducedMotion()
   const stage = stageForLevel(level)
+  const { t } = useI18n()
   const accessories = accessoriesForLevel(level)
   const topY = BASE_Y - STEM_HEIGHT[stage.stage - 1] - (stage.stage === 6 ? 30 : stage.stage === 5 ? 18 : 6)
   // crop empty sky above young plants so the card stays snug
@@ -120,7 +123,7 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
 
   const poke = () => {
     setTapCount((c) => c + 1)
-    setLine(COMPANION_LINES[(tapCount + level) % COMPANION_LINES.length])
+    setLine(t(`companion.line.${(tapCount + level) % COMPANION_LINE_COUNT}` as MessageKey))
     window.setTimeout(() => setLine(null), 3200)
   }
 
@@ -143,7 +146,7 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
       <m.button
         type="button"
         onClick={poke}
-        aria-label={`${name}, your ${stage.name.toLowerCase()} companion. Tap to say hi`}
+        aria-label={t('companion.aria', { name, stage: t(`stage.${stage.stage}` as MessageKey).toLowerCase() })}
         whileTap={{ scale: 0.94, rotate: -3 }}
         animate={reduce ? undefined : { y: [0, -5, 0] }}
         transition={reduce ? undefined : { duration: 4, repeat: Infinity, ease: 'easeInOut' }}

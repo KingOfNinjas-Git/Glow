@@ -16,12 +16,14 @@ export function needsBackupNudge(data: AppData, now: Date = new Date()): boolean
   return Number.isFinite(days) && days >= BACKUP_NUDGE_AFTER_DAYS
 }
 
-/** "never", "today", "yesterday", "5 days ago": for the line under the backup button. */
-export function describeLastBackup(lastBackupAt: string | undefined, now: Date = new Date()): string {
-  if (!lastBackupAt) return 'never'
+export type LastBackup = { kind: 'never' | 'today' | 'yesterday' } | { kind: 'days'; n: number }
+
+/** When the last backup was: never, today, yesterday, or N days ago. The screen turns it into words in the right language. */
+export function lastBackupAge(lastBackupAt: string | undefined, now: Date = new Date()): LastBackup {
+  if (!lastBackupAt) return { kind: 'never' }
   const days = Math.floor(daysBetween(lastBackupAt, now))
-  if (!Number.isFinite(days) || days < 1) return 'today'
-  return days === 1 ? 'yesterday' : `${days} days ago`
+  if (!Number.isFinite(days) || days < 1) return { kind: 'today' }
+  return days === 1 ? { kind: 'yesterday' } : { kind: 'days', n: days }
 }
 
 /** Saves the data as a .json file through the browser's normal download. */
