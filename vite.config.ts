@@ -23,10 +23,17 @@ export default defineConfig({
         name: APP_NAME,
         short_name: APP_NAME,
         description: APP_TAGLINE,
+        id: '/',
         start_url: '/',
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
+        categories: ['health', 'lifestyle'],
+        // Long-press the app icon on Android to jump straight in.
+        shortcuts: [
+          { name: 'Breathe', url: '/#/breathe', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Check in', url: '/#/checkin', icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }] },
+        ],
         background_color: THEME_COLOR_LIGHT,
         theme_color: THEME_COLOR_LIGHT,
         icons: [

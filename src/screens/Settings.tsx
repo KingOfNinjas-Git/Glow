@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ReminderSettings } from '../components/ReminderSettings'
 import { Button } from '../components/ui/Button'
 import { Card, SectionTitle } from '../components/ui/Card'
-import { Segmented } from '../components/ui/Controls'
+import { Segmented, Switch } from '../components/ui/Controls'
 import { Modal } from '../components/ui/Modal'
 import { APP_NAME } from '../config/app'
 import { PALETTES } from '../data/unlocks'
 import { useApp } from '../state/AppContext'
-import type { ThemeMode } from '../state/types'
+import { parseBackup } from '../state/persistence'
+import type { AppData, ThemeMode } from '../state/types'
 
 function exportData(json: string) {
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
@@ -22,6 +23,19 @@ export function Settings() {
   const app = useApp()
   const { data, level } = app
   const [confirmReset, setConfirmReset] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState<AppData | null>(null)
+  const [restoreMessage, setRestoreMessage] = useState<{ text: string; good: boolean } | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
+
+  /** Read the chosen file, check it is a real backup, then ask before replacing anything. */
+  const chooseBackup = async (file: File | undefined) => {
+    if (!file) return
+    setRestoreMessage(null)
+    const result = parseBackup(await file.text())
+    if (result.ok) setPendingRestore(result.data)
+    else setRestoreMessage({ text: result.error, good: false })
+    if (fileInput.current) fileInput.current.value = '' // lets the same file be picked again
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -45,6 +59,7 @@ export function Settings() {
         <label className="block">
           <span className="mb-1 block text-sm font-bold text-ink-soft">Companion’s name</span>
           <input
+            key={data.companion.name}
             defaultValue={data.companion.name}
             maxLength={16}
             onBlur={(e) => app.setCompanionName(e.target.value)}
@@ -102,6 +117,17 @@ export function Settings() {
         </div>
       </Card>
 
+      <Card className="space-y-3">
+        <SectionTitle>Breathing</SectionTitle>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-bold">Soft vibration</p>
+            <p className="text-sm text-ink-soft">A tiny buzz when it is time to breathe in, hold or out (phones that support it).</p>
+          </div>
+          <Switch checked={data.settings.haptics} onChange={(v) => app.updateSettings({ haptics: v })} label="Soft vibration while breathing" />
+        </div>
+      </Card>
+
       <Card>
         <SectionTitle>Gentle reminders</SectionTitle>
         <ReminderSettings />
@@ -114,11 +140,53 @@ export function Settings() {
           <Button variant="soft" onClick={() => exportData(JSON.stringify(data, null, 2))}>
             Download a backup
           </Button>
+          <Button variant="soft" onClick={() => fileInput.current?.click()}>
+            Restore a backup
+          </Button>
           <Button variant="danger" onClick={() => setConfirmReset(true)}>
             Start over
           </Button>
         </div>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className="sr-only"
+          tabIndex={-1}
+          aria-label="Choose a backup file to restore"
+          onChange={(e) => void chooseBackup(e.target.files?.[0])}
+        />
+        {restoreMessage && (
+          <p role="status" className={`rounded-2xl p-3 text-sm ${restoreMessage.good ? 'bg-accent-soft' : 'bg-surface2 text-ink-soft'}`}>
+            {restoreMessage.text}
+          </p>
+        )}
+        <p className="text-sm text-ink-soft">
+          Moving to a new phone, or between the website and the app? Download a backup on one, then restore it on the other.
+        </p>
       </Card>
+
+      <Modal open={pendingRestore !== null} onClose={() => setPendingRestore(null)} title="Restore this backup?">
+        <p className="text-ink-soft">
+          This replaces what is on this device now
+          {pendingRestore ? ` with ${pendingRestore.habits.length} ${pendingRestore.habits.length === 1 ? 'habit' : 'habits'} and ${pendingRestore.xp} XP from the backup` : ''}. A
+          backup of what you have now first is a nice idea.
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setPendingRestore(null)}>
+            Keep what I have
+          </Button>
+          <Button
+            onClick={() => {
+              if (pendingRestore) app.restoreAll(pendingRestore)
+              setPendingRestore(null)
+              setRestoreMessage({ text: 'Backup restored. Welcome back ✨', good: true })
+            }}
+          >
+            Yes, restore
+          </Button>
+        </div>
+      </Modal>
 
       <Modal open={confirmReset} onClose={() => setConfirmReset(false)} title="Start over?">
         <p className="text-ink-soft">This clears your habits, XP and history on this device. It can’t be undone (a backup first is a nice idea).</p>

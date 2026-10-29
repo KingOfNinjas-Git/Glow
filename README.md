@@ -42,6 +42,11 @@ Six themes (Peach L1, Lavender L2, Mint L4, Sky L6, Rosé L9, Aurora L13), six c
 ### Data and storage
 All data is one versioned JSON object under `STORAGE_KEY`, accessed through `src/lib/storage.ts` (`StorageAdapter`) and `src/state/persistence.ts`. Components never touch `localStorage`. To add a backend later, implement a new adapter or replace `persistence.ts` with an async repository. State transitions in `src/state/actions.ts` are pure functions, so they can be reused server-side.
 
+**Backups.** Settings has *Download a backup* and *Restore a backup*. A restore is checked first (`parseBackup` in `persistence.ts` refuses anything that is not clearly a Glow backup, and fills in settings an older backup does not have), then asks before replacing anything. This is how you move between the website and the phone app, or to a new phone. **Two copies open at once** (the browser tab and the installed app) stay in sync: each listens for the other's saves (`storage` event) instead of overwriting them.
+
+### Breathing
+The session clock only advances while the app is showing (`advanceElapsed` in `src/lib/breathing.ts`), so locking the phone pauses it instead of finishing it and awarding XP. The screen is kept awake during a session (Screen Wake Lock, `src/hooks/useWakeLock.ts`), and a soft vibration marks each phase on phones that support it (a setting).
+
 ### Reminders
 Uses the Notification API (through the service worker when available). Permission is requested only when you tap the button. If notifications are denied or unsupported, reminders show as a soft in-app toast instead. **Limitation:** with no backend or push server, a reminder can only fire while the app is open or running in the background. A reminder that is more than 5 minutes late is skipped rather than nagging. Real push notifications need a backend later.
 
@@ -60,3 +65,16 @@ src/
   components/  small typed UI pieces (ui/ holds primitives)
   screens/     Home, Breathe, CheckIn, Progress, Settings, Onboarding
 ```
+
+## Putting it online (Hostinger, as a subdomain)
+
+Glow is a static site: there is nothing to run on the server.
+
+1. In hPanel create the subdomain (for example `glow.franciscowebdev.com`) with its own folder. It has to be the **root** of a (sub)domain, because the install manifest uses `/` as its start address.
+2. `npm run build` (the PWA step takes about a minute).
+3. Upload the **contents** of `dist/` (not the folder itself) to that subdomain's folder. `dist/.htaccess` comes from `public/.htaccess`: it keeps `index.html` and `sw.js` from being cached for long (so an update reaches your phone) and caches the hashed files in `assets/` for a year.
+4. Open the address once, then on Android in Chrome use **⋮ → Install app** (or the install banner). Long-press the icon for the *Breathe* and *Check in* shortcuts.
+
+To update later: build, upload `dist/` again. The app updates itself the next time it opens.
+
+Your data lives in the browser or app it was created in. The website tab and the installed app on one phone share it; a second device starts empty until you restore a backup there.

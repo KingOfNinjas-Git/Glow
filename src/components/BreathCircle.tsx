@@ -1,17 +1,19 @@
 import { motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
-import { phaseAt, type BreathPreset, type PhaseState } from '../lib/breathing'
+import { advanceElapsed, phaseAt, type BreathPreset, type PhaseState } from '../lib/breathing'
 
 interface Props {
   preset: BreathPreset
   totalSeconds: number
+  /** a short, soft vibration whenever the phase changes (where the phone supports it) */
+  haptics?: boolean
   onFinish: () => void
 }
 
 const smooth = (t: number) => t * t * (3 - 2 * t)
 
 /** Animated breathing circle. Drives itself from a clock so it never drifts from the phase text. */
-export function BreathCircle({ preset, totalSeconds, onFinish }: Props) {
+export function BreathCircle({ preset, totalSeconds, haptics = false, onFinish }: Props) {
   const reduce = !!useReducedMotion()
   const scale = useMotionValue(0.5)
   const ringOffset = useMotionValue(0)
@@ -19,14 +21,21 @@ export function BreathCircle({ preset, totalSeconds, onFinish }: Props) {
   const [remaining, setRemaining] = useState(totalSeconds)
   const finishRef = useRef(onFinish)
   finishRef.current = onFinish
+  const hapticsRef = useRef(haptics)
+  hapticsRef.current = haptics
 
   useEffect(() => {
-    const start = performance.now()
+    // Time only counts while the screen is on and the app is showing (see advanceElapsed), so locking the
+    // phone pauses the session instead of finishing it.
+    let elapsed = 0
+    let previous = performance.now()
     let raf = 0
     let last = ''
+    let lastPhase = 0
     let done = false
     const frame = (now: number) => {
-      const elapsed = now - start
+      elapsed = advanceElapsed(elapsed, now - previous)
+      previous = now
       const total = totalSeconds * 1000
       if (elapsed >= total && !done) {
         done = true
@@ -34,6 +43,10 @@ export function BreathCircle({ preset, totalSeconds, onFinish }: Props) {
         return
       }
       const p = phaseAt(preset, elapsed)
+      if (p.index !== lastPhase) {
+        lastPhase = p.index
+        if (hapticsRef.current) navigator.vibrate?.(30)
+      }
       scale.set(reduce ? 0.8 : 0.5 + 0.5 * smooth(p.scale))
       ringOffset.set(1 - Math.min(1, elapsed / total))
       const key = `${p.index}:${p.secondsLeft}`

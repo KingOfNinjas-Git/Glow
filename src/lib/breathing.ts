@@ -73,6 +73,14 @@ export interface PhaseState {
   scale: number
 }
 
+/**
+ * Adds one animation frame to the time a session has been running. A frame that took much longer than
+ * expected (the screen was locked or the app was in the background) only counts as `maxStepMs`, so a
+ * session pauses while you are away instead of finishing, and awarding XP, the moment you come back.
+ */
+export const advanceElapsed = (elapsedMs: number, frameDeltaMs: number, maxStepMs = 250): number =>
+  elapsedMs + Math.min(Math.max(0, frameDeltaMs), maxStepMs)
+
 /** Where we are in the breathing cycle `elapsedMs` after the session started. */
 export function phaseAt(preset: BreathPreset, elapsedMs: number): PhaseState {
   const cycleMs = cycleSeconds(preset) * 1000

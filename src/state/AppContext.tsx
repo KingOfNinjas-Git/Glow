@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { STORAGE_KEY } from '../config/app'
 import { toDateKey } from '../lib/dates'
 import { applyXp, getLevelInfo, type LevelInfo } from '../lib/xp'
 import { unlocksAtLevel } from '../data/unlocks'
@@ -29,6 +30,8 @@ export interface AppApi {
   removeReminder: (id: string) => void
   markReminderFired: (id: string) => void
   resetAll: () => void
+  /** Replace everything with the data from a backup (already checked by parseBackup). */
+  restoreAll: (data: AppData) => void
 }
 
 const AppContext = createContext<AppApi | null>(null)
@@ -42,6 +45,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveAppData(data)
   }, [data])
+
+  // The same data can be open in two places at once (the browser tab and the installed app). When the other
+  // one saves, take its version instead of overwriting it with ours on the next change.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY && e.key !== null) return
+      const next = loadAppData()
+      ref.current = next
+      setData(next)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   /** Commit a pure transition, then fire the feel-good effects (floating XP, level-up). */
   const commit = useCallback(
@@ -86,6 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clearAppData()
         set(createInitialData())
       },
+      restoreAll: (restored) => set(restored),
     }),
     [data, today, commit, set],
   )

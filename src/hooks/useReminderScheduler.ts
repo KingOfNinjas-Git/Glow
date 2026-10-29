@@ -1,9 +1,13 @@
 import { useEffect, useRef } from 'react'
+import { APP_NAME } from '../config/app'
 import { REMINDER_MESSAGES } from '../data/content'
 import { toDateKey } from '../lib/dates'
 import { dueReminders, notificationSupport, pickMessageIndex } from '../lib/reminders'
 import { useApp } from '../state/AppContext'
 import { useFx } from '../state/FxContext'
+
+/** Works wherever the app is hosted, not only at the top of a site. */
+const ICON = `${import.meta.env.BASE_URL}icon-192.png`
 
 /** Show a system notification (via the service worker when possible), else resolve false. */
 export async function showSystemNotification(title: string, body: string): Promise<boolean> {
@@ -11,10 +15,10 @@ export async function showSystemNotification(title: string, body: string): Promi
   try {
     const reg = await navigator.serviceWorker?.getRegistration()
     if (reg) {
-      await reg.showNotification(title, { body, icon: '/icon-192.png', badge: '/icon-192.png', tag: 'glow-reminder' })
+      await reg.showNotification(title, { body, icon: ICON, badge: ICON, tag: `${APP_NAME.toLowerCase()}-reminder` })
       return true
     }
-    new Notification(title, { body, icon: '/icon-192.png' })
+    new Notification(title, { body, icon: ICON })
     return true
   } catch {
     return false

@@ -41,6 +41,8 @@ export interface Settings {
   palette: PaletteId
   reminders: Reminder[]
   lastReminderMessage?: number
+  /** a soft vibration on each breathing phase (phones that support it) */
+  haptics: boolean
 }
 
 export interface AppData {
@@ -69,5 +71,5 @@ export const createInitialData = (now: Date = new Date()): AppData => ({
   checkIns: {},
   breaths: [],
   companion: { name: 'Sprout' },
-  settings: { themeMode: 'system', palette: 'peach', reminders: [] },
+  settings: { themeMode: 'system', palette: 'peach', reminders: [], haptics: true },
 })

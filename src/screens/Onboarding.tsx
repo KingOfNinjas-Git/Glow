@@ -20,7 +20,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -106,6 +106,6 @@ export function Onboarding() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   )
 }

@@ -10,7 +10,7 @@ import { Switch } from './ui/Controls'
 const STATUS_COPY: Record<NotificationSupport, string> = {
   unsupported: 'This browser can’t show notifications, so reminders appear inside the app while it’s open.',
   default: 'Allow notifications so reminders can reach you.',
-  granted: 'Notifications are on. Reminders arrive while the app is open or running in the background.',
+  granted: 'Notifications are on. Reminders arrive while the app is open or running in the background. If your phone has fully closed the app, they can be late or missing.',
   denied: 'Notifications are blocked in your browser settings. No worries: reminders will show up inside the app instead.',
 }
 

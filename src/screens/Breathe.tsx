@@ -4,6 +4,7 @@ import { BreathCircle } from '../components/BreathCircle'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Segmented } from '../components/ui/Controls'
+import { useWakeLock } from '../hooks/useWakeLock'
 import { DURATIONS_MIN, PRESETS, getPreset, type PresetId } from '../lib/breathing'
 import { XP_REWARDS } from '../lib/xp'
 import { useApp } from '../state/AppContext'
@@ -18,6 +19,7 @@ export function Breathe() {
   const awarded = useRef(false)
   const doneButton = useRef<HTMLButtonElement>(null)
   const preset = getPreset(presetId)
+  useWakeLock(stage === 'running') // the phone should not lock in the middle of a session
 
   const start = () => {
     awarded.current = false
@@ -80,7 +82,7 @@ export function Breathe() {
 
       {stage === 'running' && (
         <Card className="flex flex-col items-center gap-4 py-8">
-          <BreathCircle preset={preset} totalSeconds={minutes * 60} onFinish={finish} />
+          <BreathCircle preset={preset} totalSeconds={minutes * 60} haptics={app.data.settings.haptics} onFinish={finish} />
           <Button variant="ghost" onClick={() => setStage('stopped')}>
             Stop here
           </Button>
