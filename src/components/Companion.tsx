@@ -160,7 +160,16 @@ export function Companion({ level, name, size = 220 }: { level: number; name: st
             animate={reduce ? undefined : { rotate: [-2, 2, -2] }}
             transition={reduce ? undefined : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <Plant stage={stage.stage} />
+            {/* a new stage springs up from the soil instead of swapping in */}
+            <m.g
+              key={stage.stage}
+              initial={reduce ? false : { scale: 0.55, opacity: 0.4 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 160, damping: 11 }}
+              style={{ transformOrigin: `100px ${BASE_Y}px` }}
+            >
+              <Plant stage={stage.stage} />
+            </m.g>
           </m.g>
           {/* pot */}
           <path d="M66 124 H134 L126 180 Q125 186 119 186 H81 Q75 186 74 180 Z" fill="var(--accent)" />

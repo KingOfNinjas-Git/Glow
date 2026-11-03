@@ -1,5 +1,5 @@
-import { AnimatePresence, m } from 'framer-motion'
-import { useState } from 'react'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { useAbout } from '../components/About'
 import { Companion } from '../components/Companion'
 import { LanguageSwitch } from '../components/LanguageSwitch'
@@ -10,8 +10,20 @@ import { useI18n } from '../i18n'
 import { XP_REWARDS } from '../lib/xp'
 import { useApp } from '../state/AppContext'
 
+/** Levels the welcome plant grows through: seed, sprout, seedling, leafy, budding. */
+const WELCOME_LEVELS = [1, 2, 4, 7, 10]
+
 export function Onboarding() {
   const app = useApp()
+  const reduce = !!useReducedMotion()
+  // the plant grows once while the page is read, to show what the app is about; no motion means it starts grown
+  const [growth, setGrowth] = useState(0)
+  const welcomeLevel = WELCOME_LEVELS[reduce ? WELCOME_LEVELS.length - 1 : growth]
+  useEffect(() => {
+    if (reduce || growth >= WELCOME_LEVELS.length - 1) return
+    const id = window.setTimeout(() => setGrowth((g) => g + 1), growth === 0 ? 1100 : 900)
+    return () => window.clearTimeout(id)
+  }, [growth, reduce])
   const about = useAbout()
   const { t } = useI18n()
   const [step, setStep] = useState(0)
@@ -40,13 +52,26 @@ export function Onboarding() {
         >
           {step === 0 && (
             <>
-              <Companion level={1} name="Sprout" size={200} />
+              {/* fixed height so the heading does not drop as the plant gets taller; the pot stays where it is */}
+              <div className="flex h-[200px] items-end justify-center">
+                <Companion level={welcomeLevel} name="Sprout" size={200} />
+              </div>
               <h1 className="text-4xl font-black tracking-tight">{t('onb.welcome', { app: APP_NAME })}</h1>
               <p className="text-lg text-ink-soft">{t('onb.intro')}</p>
               <ul className="grid grid-cols-3 gap-2 text-sm font-bold">
-                <li className="rounded-2xl bg-accent-soft p-3 text-accent-strong">🌿 {t('common.habit')}<br />+{XP_REWARDS.habit}</li>
-                <li className="rounded-2xl bg-accent-soft p-3 text-accent-strong">🌬️ {t('nav.breathe')}<br />+{XP_REWARDS.breathing}</li>
-                <li className="rounded-2xl bg-accent-soft p-3 text-accent-strong">💭 {t('nav.checkin')}<br />+{XP_REWARDS.checkin}</li>
+                {[
+                  { icon: <path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7" />, label: t('common.habit'), xp: XP_REWARDS.habit },
+                  { icon: <path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7" />, label: t('nav.breathe'), xp: XP_REWARDS.breathing },
+                  { icon: <path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />, label: t('nav.checkin'), xp: XP_REWARDS.checkin },
+                ].map(({ icon, label, xp }) => (
+                  <li key={label} className="flex flex-col items-center gap-1 rounded-2xl bg-accent-soft p-3 text-accent-strong">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      {icon}
+                    </svg>
+                    {label}
+                    <span className="font-semibold text-ink-soft">+{xp} XP</span>
+                  </li>
+                ))}
               </ul>
             </>
           )}
